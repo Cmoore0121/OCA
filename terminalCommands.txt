@@ -1,0 +1,8 @@
+npm create vite@latest frontend -- --template react
+> cd frontend
+> npm install
+> npm run dev
+> Local:   http://localhost:5173/
+pip3 install Flask
+pip3 install Flask-SQLAlchemy
+pip3 install flask-cors
