@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from config import app, db
-from models import Contact
+from models import Contact, Connection
 
 
 @app.route("/contacts", methods=["GET"])
@@ -49,9 +49,66 @@ def delete_contact(user_id):
         return jsonify({"message": "User not found"}), 404
     db.session.delete(contact)
     db.session.commit()
+
+
+@app.route("/connections", methods=["GET"])
+def get_connections():
+    connections = Connection.query.all()
+    json_connections = [connection.to_json() for connection in connections]
+    return jsonify({"connections": json_connections})
+
+@app.route("/create_connection", methods=["POST"])
+def create_connection():
+    data = request.json
+    new_connection = Connection(
+        first_name=data.get("firstName"),
+        last_name=data.get("lastName"),
+        linked_in_url=data.get("linkedInUrl"),
+        company=data.get("company"),
+        position=data.get("position"),
+        oca_connect=data.get("ocaConnect")
+    )
+    try:
+        db.session.add(new_connection)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 400
+    return jsonify({"message": "Connection created"}), 201
+
+@app.route("/update_connection/<int:id>", methods=["PATCH"])
+def update_connection(id):
+    connection = Connection.query.get(id)
+    if not connection:
+        return jsonify({"message": "Connection not found"}), 404
+
+    data = request.json
+    connection.first_name = data.get("firstName", connection.first_name)
+    connection.last_name = data.get("lastName", connection.last_name)
+    connection.linked_in_url = data.get("linkedInUrl", connection.linked_in_url)
+    connection.company = data.get("company", connection.company)
+    connection.position = data.get("position", connection.position)
+    connection.oca_connect = data.get("ocaConnect", connection.oca_connect)
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Connection updated", "connection": connection.to_json()}), 200
+    except Exception as e:
+        db.session.rollback()  # Rollback the transaction to keep the data consistent
+        return jsonify({"message": "Error updating connection", "error": str(e)}), 400
+
+@app.route("/delete_connection/<int:id>", methods=["DELETE"])
+def delete_connection(id):
+    connection = Connection.query.get(id)
+    if not connection:
+        return jsonify({"message": "Connection not found"}), 404
+    db.session.delete(connection)
+    db.session.commit()
+    return jsonify({"message": "Connection deleted"}), 200
+
     
 if __name__ == "__main__":
-    print("Hello")
+    print("Running OCA Backend")
     with app.app_context():
         # spin up db if it doesnt exist
         db.create_all()

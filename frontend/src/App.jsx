@@ -1,8 +1,60 @@
-import { useState, useEffect, useRef } from "react";
-import ContactList from "./ContactList";
-import "./App.css";
-import ContactForm from "./ContactForm";
-import * as XLSX from 'xlsx';
+import React, { useState, useRef } from 'react';
+import { readExcel } from './utils/ReadExcel';
+import openConnectionWindow from './utils/OpenConnectWindow';
+
+
+function App() {
+  const [companies, setCompanies] = useState([]);
+  const [connections, setConnections] = useState([]);
+  const fileInputRef = useRef(null);
+  const connectionsFileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    readExcel(file, setCompanies, (error) => console.log(error));
+  };
+
+  const handleConnectionsFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      parseConnectionsCSV(file, setConnections, (error) => console.log(error)); // Implement parsing logic inside parseConnectionsCSV
+    }
+  };
+
+
+  return (
+    <div className="App">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        accept='.xlsx'
+      /> 
+      <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File</button>
+      <input
+        type="file"
+        ref={connectionsFileInputRef}
+        onChange={handleConnectionsFileChange}
+        style={{ display: 'none' }}
+        accept=".csv"
+      />
+      <button onClick={() => connectionsFileInputRef.current.click()}>Upload Connections CSV</button>
+      <div>
+        {companies.map((company, index) => (
+          <div key={index}>
+            <p>
+              Name: {company.Name || 'N/A'}, Website: {company.Website || 'N/A'}, Contact: {company["Contact Full Name 1"] || 'N/A'}
+              <button onClick={() => openConnectionWindow(company)}>Connections</button>
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
 
 /*function App() {
   const [contacts, setContacts] = useState([]);
@@ -52,48 +104,4 @@ import * as XLSX from 'xlsx';
       }
     </>
   );*/
-function App() {
-  const [companyNames, setCompanyNames] = useState([]);
-  const fileInputRef = useRef(null);
-
-  const readExcel = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const worksheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[worksheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet);
-      const names = data.map((row) => row.Name); 
-      setCompanyNames(names);
-    };
-    reader.onerror = (error) => console.log(error);
-    reader.readAsBinaryString(file);
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
-
-  return (
-    <div className="App">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={(e) => {
-          const file = e.target.files[0];
-          readExcel(file);
-        }}
-        style={{ display: 'none' }} // Hide the input element
-      />
-      <button onClick={handleUploadClick}>Upload Excel File</button>
-      <div>
-        {companyNames.map((name, index) => (
-          <p key={index}>{name}</p>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-export default App;
+  

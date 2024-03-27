@@ -5,3 +5,5 @@ npm create vite@latest frontend -- --template react
 pip3 install Flask
 pip3 install Flask-SQLAlchemy
 pip3 install flask-cors
+npm install react-modal
+
