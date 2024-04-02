@@ -23,6 +23,7 @@ class Connection(db.Model):
     first_name =db.Column(db.String(80), unique=False, nullable=False)
     last_name =db.Column(db.String(80), unique=False, nullable=False)
     linked_in_url =db.Column(db.String(180), unique=True, nullable=True)
+    email =db.Column(db.String(180), unique=False, nullable=True)
     company =db.Column(db.String(100), unique=False, nullable=True)
     position =db.Column(db.String(100), unique=False, nullable=True)
     oca_connect =db.Column(db.String(100), unique=False, nullable=False)
@@ -35,7 +36,8 @@ class Connection(db.Model):
             "firstName": self.first_name,
             "lastName": self.last_name,
             "linkedInUrl":self.linked_in_url,
+            "email": self.email,
             "company": self.company,
             "position": self.position,
-            "oca_connect":self.oca_connect
+            "ocaConnect":self.oca_connect
         }

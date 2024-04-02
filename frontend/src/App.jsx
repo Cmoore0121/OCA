@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { readExcel } from './utils/ReadExcel';
 import openConnectionWindow from './utils/OpenConnectWindow';
+import parseConnectionsCSV from './utils/ParseConnections';
+import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 
 
 function App() {
@@ -8,6 +10,8 @@ function App() {
   const [connections, setConnections] = useState([]);
   const fileInputRef = useRef(null);
   const connectionsFileInputRef = useRef(null);
+  const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -16,10 +20,38 @@ function App() {
 
   const handleConnectionsFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      parseConnectionsCSV(file, setConnections, (error) => console.log(error)); // Implement parsing logic inside parseConnectionsCSV
+    const ocaConnect = prompt("Please enter who at OCA these connections belong to");
+    if (ocaConnect && file) {
+      parseConnectionsCSV(file, ocaConnect, 
+        (parsedConnections) => {
+          // Update state with the parsed connections
+          setConnections(parsedConnections);
+          setIsCSVFileParsed(true)
+ 
+        }, 
+        (error) => {
+          // Handle any errors during parsing
+          console.log(error);
+        }
+      );
+    } else {
+      // Handle the case where the user did not input their ocaConnect
+      console.log("ocaConnect is required to parse the CSV.");
     }
   };
+
+  const addManyConnections = () => {
+    // Iterate over the connections array and make a POST request for each connection
+    connections.forEach(connection => {
+      // Assuming addConnectionToDatabase is a function that makes a POST request to your API
+      addConnectionToDatabase(connection);
+    });
+
+    // Optionally, reset state after adding connections
+    setConnections([]);
+    setIsCSVFileParsed(false);
+  };
+
 
 
   return (
@@ -31,7 +63,7 @@ function App() {
         style={{ display: 'none' }}
         accept='.xlsx'
       /> 
-      <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File</button>
+      <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
       <input
         type="file"
         ref={connectionsFileInputRef}
@@ -39,7 +71,12 @@ function App() {
         style={{ display: 'none' }}
         accept=".csv"
       />
-      <button onClick={() => connectionsFileInputRef.current.click()}>Upload Connections CSV</button>
+      <button onClick={() => connectionsFileInputRef.current.click()}>Upload Connections -Entire CSV</button>
+      {isCSVFileParsed && (
+        <button onClick={addManyConnections}>
+          Are you sure you want to add {connections.length} connections?
+        </button>
+      )}
       <div>
         {companies.map((company, index) => (
           <div key={index}>

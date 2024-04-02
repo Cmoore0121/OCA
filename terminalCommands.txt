@@ -7,3 +7,4 @@ pip3 install Flask-SQLAlchemy
 pip3 install flask-cors
 npm install react-modal
 
+Notes - Deal with duplicates when uploading entire CSV's of connections

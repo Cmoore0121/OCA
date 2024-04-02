@@ -64,6 +64,7 @@ def create_connection():
         first_name=data.get("firstName"),
         last_name=data.get("lastName"),
         linked_in_url=data.get("linkedInUrl"),
+        email=data.get("email"),
         company=data.get("company"),
         position=data.get("position"),
         oca_connect=data.get("ocaConnect")
