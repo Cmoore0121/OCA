@@ -3,6 +3,8 @@ import { readExcel } from './utils/ReadExcel';
 import openConnectionWindow from './utils/OpenConnectWindow';
 import parseConnectionsCSV from './utils/ParseConnections';
 import { addConnectionToDatabase } from './utils/addConnectionDatabase';
+import openAllConnectionWindow from './utils/ManageConnectionsWindow';
+
 
 
 function App() {
@@ -11,6 +13,19 @@ function App() {
   const fileInputRef = useRef(null);
   const connectionsFileInputRef = useRef(null);
   const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
+  const [allConnections, setAllConnections] = useState([]);
+
+
+  // Fetch connections from the backend
+  useEffect(() => {
+    fetchConnections()
+  }, []);
+
+  const fetchConnections = async () => {
+    const response = await fetch("http://127.0.0.1:5000/connections");
+    const data = await response.json();
+    setAllConnections(data.connections);
+  };
 
 
   const handleFileChange = (e) => {
@@ -71,6 +86,7 @@ function App() {
         style={{ display: 'none' }}
         accept=".csv"
       />
+      <button onClick={() => openAllConnectionWindow(allConnections)}>Manage Connections</button>
       <button onClick={() => connectionsFileInputRef.current.click()}>Upload Connections -Entire CSV</button>
       {isCSVFileParsed && (
         <button onClick={addManyConnections}>
