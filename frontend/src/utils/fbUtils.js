@@ -1,4 +1,5 @@
 import { initializeApp } from 'fireabse/app'
+import {getFirestore, collection, getDocs} from 'firebase/firestore'
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -11,4 +12,10 @@ const firebaseConfig = {
     measurementId: "G-MYNZ2CKXQ4"
   };
 
-  initializeApp(firebaseConfig);
+
+initializeApp(firebaseConfig);
+const db = getFirestore()
+const colRef = collection(db, "ppp")
+
+
+
