@@ -107,6 +107,15 @@ function App() {
     setAdditionalInfo(info);
   };
 
+  const sortCompaniesByLoanAmount = () => {
+    const sortedCompanies = [...companies].sort((a, b) => {
+      const loanA = additionalInfo[a.Name]?.loanAmount === 'N/A' ? -1 : parseInt(additionalInfo[a.Name]?.loanAmount);
+      const loanB = additionalInfo[b.Name]?.loanAmount === 'N/A' ? -1 : parseInt(additionalInfo[b.Name]?.loanAmount);
+      return loanB - loanA; // For descending order
+    });
+    setCompanies(sortedCompanies);
+  };
+
  /* const handleConnectionsFileChange = (e) => {
     const file = e.target.files[0];
     const ocaConnect = prompt("Please enter who at OCA these connections belong to");
@@ -153,6 +162,9 @@ function App() {
           accept='.xlsx'
         /> 
         <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
+        {companies.length > 0 && (
+        <button onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
+        )}
         <div>
         {companies.map((company, index) => (
           <div key={index}>
