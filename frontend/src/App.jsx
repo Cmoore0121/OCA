@@ -13,10 +13,11 @@ import {queryDocumentsByField} from './utils/firebaseSet';
 
 function App() {
   const [companies, setCompanies] = useState([]);
-  const [pppCount, setPppCount] = useState(0); // State to store the count of 'ppp' documents
   const fileInputRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState([]);
+  const [resultsSearchPPP, setResultsSearchPP] = useState([]);
+  const [messageSearchPPP, setMessageSearchPPP] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState({});
   //const connectionsFileInputRef = useRef(null);
   //const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
   //const [allConnections, setAllConnections] = useState([]);
@@ -52,21 +53,58 @@ function App() {
     }
     try {
       const documents = await queryDocumentsByField('business_name', searchTerm);
-      setResults(documents);
       if (documents.length > 0) {
         console.log('Documents found:', documents);
+        setMessageSearchPPP('');
+        setResultsSearchPP(documents);
       } else {
         console.log('No documents found.');
+        setMessageSearchPPP('No results found.');  // Set message for no results
+        setResultsSearchPP([]);
       }
     } catch (error) {
       console.error('Error performing the search:', error);
+      setMessageSearchPPP('Failed to perform search.');  // Set message for error
+      setResultsSearchPP([]);
     }
   };
 
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    readExcel(file, setCompanies, (error) => console.log(error));
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    readExcel(file,
+      (companiesData) => {
+        setCompanies(companiesData);
+        fetchAdditionalInfo(companiesData);
+      },
+      (error) => {
+        console.error("Error reading the Excel file: ", error);
+      }
+    );
+  };
+
+  const fetchAdditionalInfo = async (companiesData) => {
+    const info = {};
+    for (const company of companiesData) {
+      const documents = await queryDocumentsByField('business_name', company.Name);
+      if (documents.length > 0) {
+        const firstDoc = documents[0];
+        info[company.Name] = {
+          loanAmount: firstDoc.loan_amount || 'N/A',
+          naicsCode: firstDoc.naics_code || 'N/A',
+          lender: firstDoc.lender || 'N/A'
+        };
+      } else {
+        info[company.Name] = {
+          loanAmount: 'N/A',
+          naicsCode: 'N/A',
+          lender: 'N/A'
+        };
+      }
+    }
+    setAdditionalInfo(info);
   };
 
  /* const handleConnectionsFileChange = (e) => {
@@ -119,8 +157,12 @@ function App() {
         {companies.map((company, index) => (
           <div key={index}>
             <p>
-              Name: {company.Name || 'N/A'}, Website: {company.Website || 'N/A'}, Contact: {company["Contact Full Name 1"] || 'N/A'}
-              
+            Name: {company.Name || 'N/A'}, 
+              Website: {company.Website || 'N/A'},  
+              Contact: {company["Contact Full Name 1"] || 'N/A'}, 
+              Loan Amount: {additionalInfo[company.Name] ? additionalInfo[company.Name].loanAmount : 'Fetching...'}, 
+              NAICS Code: {additionalInfo[company.Name] ? additionalInfo[company.Name].naicsCode : 'Fetching...'}, 
+              Lender: {additionalInfo[company.Name] ? additionalInfo[company.Name].lender : 'Fetching...'}
               {/*<button onClick={() => openConnectionWindow(company)}>Connections</button> */}
             </p>
           </div>
@@ -136,10 +178,10 @@ function App() {
         />
         <button type="submit">Search</button>
       </form>
-      {/* Display search results */}
-      {results.map(doc => (
+      {messageSearchPPP && <p>{messageSearchPPP}</p>}
+      {resultsSearchPPP.map(doc => (
         <div key={doc.id}>
-          <p>{doc.business_name}</p>
+          <p>Name: {doc.business_name || 'N/A'}, lender: {doc.lender || 'N/A'}, Amount: {doc.loan_amount|| 'N/A'}, NAICS_CODE: {doc.naics_code || "N/A"}</p>
           {/* Render other document fields as needed */}
         </div>
       ))}
@@ -151,43 +193,3 @@ function App() {
 
 
 export default App;
-  
-
-  /*<div className="App">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-        accept='.xlsx'
-      /> 
-      <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
-      {/*<input
-        type="file"
-        ref={connectionsFileInputRef}
-        onChange={handleConnectionsFileChange}
-        style={{ display: 'none' }}
-        accept=".csv"
-      />
-      <button onClick={() => openAllConnectionWindow(allConnections)}>Manage Connections</button>
-      <button onClick={() => connectionsFileInputRef.current.click()}>Upload Connections -Entire CSV</button>
-      {isCSVFileParsed && (
-        <button onClick={addManyConnections}>
-          Are you sure you want to add {connections.length} connections?
-        </button>
-      )} 
-      <div>
-        {companies.map((company, index) => (
-          <div key={index}>
-            <p>
-              Name: {company.Name || 'N/A'}, Website: {company.Website || 'N/A'}, Contact: {company["Contact Full Name 1"] || 'N/A'}
-              <button onClick={() => openConnectionWindow(company)}>Connections</button>
-            </p>
-          </div>
-        ))}
-      </div>
-      <div>
-        <p>Count of PPP records: {pppCount}</p>
-      </div>
-    </div>
-  ); */

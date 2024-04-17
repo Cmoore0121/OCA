@@ -40,8 +40,10 @@ async function queryDocumentsByField(fieldName, fieldValue) {
     if (!querySnapshot.empty) {
       const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       console.log(`Found ${documents.length} documents with ${fieldName}="${fieldValue}":`, documents);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } else {
       console.log(`No documents found with ${fieldName}="${fieldValue}".`);
+      return [];
     }
   } catch (error) {
     console.error(`Error querying documents by ${fieldName}:`, error);
