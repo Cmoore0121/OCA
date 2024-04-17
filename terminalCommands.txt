@@ -1,4 +1,4 @@
-npm create vite@latest frontend -- --template react
+
 > cd frontend
 > npm install
 > npm run dev
@@ -6,5 +6,6 @@ pip3 install Flask
 pip3 install Flask-SQLAlchemy
 pip3 install flask-cors
 npm install react-modal
+npm install firebase
 
 Notes - Deal with duplicates when uploading entire CSV's of connections

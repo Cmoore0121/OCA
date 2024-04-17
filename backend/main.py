@@ -1,6 +1,7 @@
+import datetime
 from flask import request, jsonify
 from config import app, db
-from models import Contact, Connection
+from models import Contact, Connection, PPPLoan
 
 
 @app.route("/contacts", methods=["GET"])
@@ -106,6 +107,40 @@ def delete_connection(id):
     db.session.delete(connection)
     db.session.commit()
     return jsonify({"message": "Connection deleted"}), 200
+
+
+@app.route("/create_ppp_loan", methods=["POST"])
+def create_ppp_loan():
+    data = request.json
+
+
+    new_loan = PPPLoan(
+        loan_amount=data.get("loanAmount"),
+        business_name=data.get("businessName"),
+        address=data.get("address"),
+        city=data.get("city"),
+        state=data.get("state"),
+        zip=data.get("zip"),
+        naics_code=data.get("naicsCode"),
+        business_type=data.get("businessType"),
+        race_ethnicity=data.get("raceEthnicity"),
+        gender=data.get("gender"),
+        date_approved=data.get("date_approved"),
+        lender=data.get("lender"),
+        cd=data.get("cd"),
+        year_approved=data.get("yearApproved"),
+        address_clean=data.get("addressClean"),
+        state_clean=data.get("stateClean"),
+        city_clean=data.get("cityClean")
+    )
+
+    try:
+        db.session.add(new_loan)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 400
+    return jsonify({"message": "PPP Loan created successfully"}), 201
 
     
 if __name__ == "__main__":
