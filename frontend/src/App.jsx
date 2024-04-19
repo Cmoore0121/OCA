@@ -4,7 +4,7 @@ import { readExcel } from './utils/ReadExcel';
 //import parseConnectionsCSV from './utils/ParseConnections';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 //import openAllConnectionWindow from './utils/ManageConnectionsWindow';
-import {queryDocumentsByField} from './utils/firebaseSet';
+import {queryDocumentsByField, queryDocumentsByZipAndNaicsRange, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
 
 
 
@@ -15,9 +15,11 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const fileInputRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [resultsSearchPPP, setResultsSearchPP] = useState([]);
+  const [resultsSearchPPP, setResultsSearchPPP] = useState([]);
   const [messageSearchPPP, setMessageSearchPPP] = useState('');
+  const [zipCodeSearch, setZipCodeSearch] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState({});
+  const [naicsCode, setNaicsCode] = useState('');
   //const connectionsFileInputRef = useRef(null);
   //const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
   //const [allConnections, setAllConnections] = useState([]);
@@ -56,16 +58,16 @@ function App() {
       if (documents.length > 0) {
         console.log('Documents found:', documents);
         setMessageSearchPPP('');
-        setResultsSearchPP(documents);
+        setResultsSearchPPP(documents);
       } else {
         console.log('No documents found.');
         setMessageSearchPPP('No results found.');  // Set message for no results
-        setResultsSearchPP([]);
+        setResultsSearchPPP([]);
       }
     } catch (error) {
       console.error('Error performing the search:', error);
       setMessageSearchPPP('Failed to perform search.');  // Set message for error
-      setResultsSearchPP([]);
+      setResultsSearchPPP([]);
     }
   };
 
@@ -107,6 +109,30 @@ function App() {
     setAdditionalInfo(info);
   };
 
+  /*const handleZipCodeSearchSubmit = async () => {
+    // Convert zipCodeSearch to a number if it's not empty and is a valid number
+    const zipCode = zipCodeSearch.trim() ? Number(zipCodeSearch.trim()) : null;
+    if (!zipCode) {
+      setMessageSearchPPP('Please enter a valid zip code.');
+      setResultsSearchPPP([]);
+      return;
+    }
+    try {
+      const documents = await queryDocumentsByField('zip', zipCode); // Assuming the field is 'zip'
+      if (documents.length > 0) {
+        setMessageSearchPPP('');
+        setResultsSearchPPP(documents);
+      } else {
+        setMessageSearchPPP('No results found for the given zip code.'); 
+        setResultsSearchPPP([]);
+      }
+    } catch (error) {
+      console.error('Error performing the zip code search:', error);
+      setMessageSearchPPP('Failed to perform zip code search.'); 
+      setResultsSearchPPP([]);
+    }
+  };*/
+
   const sortCompaniesByLoanAmount = () => {
     const sortedCompanies = [...companies].sort((a, b) => {
       const loanA = additionalInfo[a.Name]?.loanAmount === 'N/A' ? -1 : parseInt(additionalInfo[a.Name]?.loanAmount);
@@ -115,6 +141,73 @@ function App() {
     });
     setCompanies(sortedCompanies);
   };
+
+  const handleZipCodeChange = (event) => {
+    setZipCodeSearch(event.target.value);
+  };
+
+  const handleNaicsCodeChange = (event) => {
+    setNaicsCode(event.target.value);
+  };
+  
+
+  /*const handleCombinedSearchSubmit = async () => {
+    event.preventDefault();
+    const zipCodeNumber = Number(zipCodeSearch.trim());
+    const naicsNumber = naicsCode.trim();
+    if (isNaN(zipCodeNumber) || naicsNumber == "") {
+      setMessageSearchPPP('Please enter valid numerical values for zip code and NAICS code range.');
+      setResultsSearchPPP([]);
+      return;
+    }
+
+    try {
+      const documents = await queryDocumentsByZipAndNaicsRange('zip', zipCodeNumber, 'naics_code', naicsNumber);
+      if (documents.length > 0) { 
+        setMessageSearchPPP('');
+        setResultsSearchPPP(documents);
+      } else {
+        setMessageSearchPPP('No results found for the given zip code.'); 
+        setResultsSearchPPP([]);
+      }
+      // ... handle results
+    } catch (error) {
+      // ... handle errors
+      console.error('Error performing the zipnaics code search:', error);
+      setMessageSearchPPP('Failed to perform zipnaics code search.'); 
+      setResultsSearchPPP([]);
+    }
+  };*/
+  const handleCombinedSearchSubmit = async (event) => {
+    event.preventDefault();
+    console.log(naicsCode, zipCodeSearch, searchTerm);
+    if (zipCodeSearch == "" && isNaN(naicsCode) == "" && searchTerm == "") {
+        setMessageSearchPPP('Input Something or else it explodes'); 
+        setResultsSearchPPP([]);
+        return
+    }
+  
+    try {
+      const documents = await queryDocumentsByFlexibleCriteria(
+        searchTerm, 
+        zipCodeSearch, 
+        naicsCode
+      );
+  
+      if (documents.length > 0) { 
+        setMessageSearchPPP('');
+        setResultsSearchPPP(documents);
+      } else {
+        setMessageSearchPPP('No results found.'); 
+        setResultsSearchPPP([]);
+      }
+    } catch (error) {
+      console.error('Error performing the search:', error);
+      setMessageSearchPPP('Failed to perform search.'); 
+      setResultsSearchPPP([]);
+    }
+  };
+  
 
  /* const handleConnectionsFileChange = (e) => {
     const file = e.target.files[0];
@@ -180,8 +273,24 @@ function App() {
           </div>
         ))}
       </div>
-      <div>
-      <form onSubmit={handleSearchSubmit}>
+      {/*<div>
+        <input
+          type="text"
+          value={zipCodeSearch}
+          onChange={handleZipCodeChange}
+          placeholder="Enter zip code"
+        />
+        <button onClick={handleZipCodeSearchSubmit}>Search by Zip Code</button>
+        {messageSearchPPP && <p>{messageSearchPPP}</p>}
+        {resultsSearchPPP.map(doc => (
+          <div key={doc.id}>
+            <p>Name: {doc.business_name || 'N/A'}, Lender: {doc.lender || 'N/A'}, Amount: {doc.loan_amount || 'N/A'}, NAICS Code: {doc.naics_code || "N/A"}</p>
+            {/* Render other document fields as needed 
+          </div>
+        ))}
+      </div> 
+      */}
+      {/*<form onSubmit={handleSearchSubmit}>
         <input
           type="text"
           value={searchTerm}
@@ -194,11 +303,51 @@ function App() {
       {resultsSearchPPP.map(doc => (
         <div key={doc.id}>
           <p>Name: {doc.business_name || 'N/A'}, lender: {doc.lender || 'N/A'}, Amount: {doc.loan_amount|| 'N/A'}, NAICS_CODE: {doc.naics_code || "N/A"}</p>
-          {/* Render other document fields as needed */}
+          {/* Render other document fields as needed 
         </div>
       ))}
     </div>
-
+    <form onSubmit={handleCombinedSearchSubmit}>
+        <input type="text" value={zipCodeSearch} onChange={handleZipCodeChange} placeholder="Zip Code" />
+        <input type="text" value={naicsCode} onChange={handleNaicsCodeChange} placeholder="NAICS Code" />
+        <button type="submit">Search</button>
+      </form>
+      {messageSearchPPP && <p>{messageSearchPPP}</p>}
+      {resultsSearchPPP.map(doc => (
+        <div key={doc.id}>
+          <p>Name: {doc.business_name}, Zip: {doc.zip}, NAICS: {doc.naics_code}, Amount: {doc.loan_amount}</p>
+        </div>
+      ))}
+    */}
+    <form onSubmit={handleCombinedSearchSubmit}>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleSearchInputChange}
+        placeholder="Enter business name"
+      />
+      <input
+        type="text"
+        value={zipCodeSearch}
+        onChange={handleZipCodeChange}
+        placeholder="Zip Code"
+      />
+      <input
+        type="text"
+        value={naicsCode}
+        onChange={handleNaicsCodeChange}
+        placeholder="NAICS Code"
+      />
+      <button type="submit">Search</button>
+    </form>
+    {messageSearchPPP && <p>{messageSearchPPP}</p>}
+      <div>
+        {resultsSearchPPP.map(doc => (
+          <div key={doc.id}>
+            <p>Name: {doc.business_name || 'N/A'}, Zip: {doc.zip || 'N/A'}, NAICS: {doc.naics_code || 'N/A'}, Amount: {doc.loan_amount || 'N/A'}, Lender: {doc.lender || 'N/A'}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

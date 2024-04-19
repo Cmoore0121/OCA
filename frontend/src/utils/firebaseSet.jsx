@@ -50,5 +50,68 @@ async function queryDocumentsByField(fieldName, fieldValue) {
   }
 }
 
+async function queryDocumentsByZipAndNaicsRange(zipFieldName, zipFieldValue, naicsFieldName, naics ) {
+  try {
+    const q = query(
+      collection(db, 'ppp'),
+      where(zipFieldName, '==', zipFieldValue),
+      where(naicsFieldName, '==', naics),
+    );
 
-export {db,  queryDocumentsByField};
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log(`Found ${documents.length} documents with ${zipFieldName}="${zipFieldValue}" and`, documents);
+      return documents;
+    } else {
+      console.log(`No documents found with ${zipFieldName}="${zipFieldValue}" and in the specified range.`);
+      return [];
+    }
+  } catch (error) {
+    console.error(`Error querying documents by ${zipFieldName} and :`, error);
+  }
+}
+
+
+async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsCode) {
+    try {
+      let conditions = [];
+      let queryRef = collection(db, 'ppp');
+  
+      if (businessName) {
+        conditions.push(where('business_name', '==', businessName.trim()));
+      }
+      if (zipCode) {
+        conditions.push(where('zip', '==', zipCode.trim()));
+      }
+      if (naicsCode) {
+        conditions.push(where('naics_code', '==', naicsCode.trim()));
+      }
+  
+      if (conditions.length === 0) {
+        console.log('No search criteria provided');
+        return [];
+      }
+      // Start with the collection reference and apply each condition
+      const combinedQuery = query(queryRef, ...conditions);
+      console.log(conditions);
+      const querySnapshot = await getDocs(combinedQuery);
+  
+      if (!querySnapshot.empty) {
+        const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log(`Found ${documents.length} documents`, documents);
+        return documents;
+      } else {
+        console.log('No document penis penis penis s found.');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error performing the flexible search:', error);
+      return [];
+    }
+  }
+
+
+
+
+export {db,  queryDocumentsByField, queryDocumentsByZipAndNaicsRange, queryDocumentsByFlexibleCriteria};
