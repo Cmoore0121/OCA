@@ -82,8 +82,11 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsCode
         conditions.push(where('business_name', '==', businessName.trim()));
       }
       if (zipCode) {
-        conditions.push(where('zip', '==', zipCode.trim()));
-      }
+        const zipCodeNumber = Number(zipCode.trim());
+        if (!isNaN(zipCodeNumber)) {
+            conditions.push(where('zip', '==', zipCodeNumber));
+        }
+    }
       if (naicsCode) {
         conditions.push(where('naics_code', '==', naicsCode.trim()));
       }

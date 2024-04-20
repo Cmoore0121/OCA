@@ -47,7 +47,7 @@ function App() {
     setSearchTerm(event.target.value);
   };
   
-  const handleSearchSubmit = async (event) => {
+  /*const handleSearchSubmit = async (event) => {
     event.preventDefault();
     if (searchTerm.trim() === '') {
       console.log('Please enter a search term.');
@@ -69,7 +69,7 @@ function App() {
       setMessageSearchPPP('Failed to perform search.');  // Set message for error
       setResultsSearchPPP([]);
     }
-  };
+  };*/
 
 
   const handleFileChange = async (event) => {
@@ -142,6 +142,17 @@ function App() {
     setCompanies(sortedCompanies);
   };
 
+  const sortSearchResultsByLoanAmount = () => {
+    const sortedResults = [...resultsSearchPPP].sort((a, b) => {
+        // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
+        const loanA = parseInt(a.loan_amount) || 0;
+        const loanB = parseInt(b.loan_amount) || 0;
+        return loanB - loanA; // Descending order
+    });
+    setResultsSearchPPP(sortedResults);
+};
+
+
   const handleZipCodeChange = (event) => {
     setZipCodeSearch(event.target.value);
   };
@@ -181,7 +192,7 @@ function App() {
   const handleCombinedSearchSubmit = async (event) => {
     event.preventDefault();
     console.log(naicsCode, zipCodeSearch, searchTerm);
-    if (zipCodeSearch == "" && isNaN(naicsCode) == "" && searchTerm == "") {
+    if (isNaN(zipCodeSearch) && naicsCode == "" && searchTerm == "") {
         setMessageSearchPPP('Input Something or else it explodes'); 
         setResultsSearchPPP([]);
         return
@@ -339,15 +350,19 @@ function App() {
         placeholder="NAICS Code"
       />
       <button type="submit">Search</button>
+
     </form>
     {messageSearchPPP && <p>{messageSearchPPP}</p>}
-      <div>
-        {resultsSearchPPP.map(doc => (
-          <div key={doc.id}>
-            <p>Name: {doc.business_name || 'N/A'}, Zip: {doc.zip || 'N/A'}, NAICS: {doc.naics_code || 'N/A'}, Amount: {doc.loan_amount || 'N/A'}, Lender: {doc.lender || 'N/A'}</p>
-          </div>
-        ))}
-      </div>
+        {resultsSearchPPP.length > 0 && (
+            <button onClick={sortSearchResultsByLoanAmount}>Sort Search Results by Loan Amount</button>
+        )}
+        <div>
+            {resultsSearchPPP.map(doc => (
+                <div key={doc.id}>
+                    <p>Name: {doc.business_name || 'N/A'}, Zip: {doc.zip || 'N/A'}, NAICS: {doc.naics_code || 'N/A'}, Amount: {doc.loan_amount || 'N/A'}, Lender: {doc.lender || 'N/A'}</p>
+                </div>
+            ))}
+        </div>
     </div>
   );
 }
