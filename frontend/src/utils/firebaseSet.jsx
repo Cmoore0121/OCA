@@ -106,11 +106,11 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStar
         console.log(`Found ${documents.length} documents`, documents);
         return documents;
       } else {
-        console.log('No document penis penis penis s found.');
+        console.log('No document   penis s found.');
         return [];
       }
     } catch (error) {
-      console.error('Error performing the flexible search:', error);
+      console.error('Error performing the search:', error);
       return [];
     }
   }
