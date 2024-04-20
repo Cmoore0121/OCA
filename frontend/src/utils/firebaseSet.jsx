@@ -73,7 +73,7 @@ async function queryDocumentsByZipAndNaicsRange(zipFieldName, zipFieldValue, nai
 }
 
 
-async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsCode) {
+async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStart, naicsEnd) {
     try {
       let conditions = [];
       let queryRef = collection(db, 'ppp');
@@ -87,9 +87,10 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsCode
             conditions.push(where('zip', '==', zipCodeNumber));
         }
     }
-      if (naicsCode) {
-        conditions.push(where('naics_code', '==', naicsCode.trim()));
-      }
+    if (naicsStart && naicsEnd) {
+      conditions.push(where('naics_code', '>=', naicsStart.trim()));
+      conditions.push(where('naics_code', '<=', naicsEnd.trim()));
+    }
   
       if (conditions.length === 0) {
         console.log('No search criteria provided');

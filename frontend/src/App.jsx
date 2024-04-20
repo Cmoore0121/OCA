@@ -19,7 +19,8 @@ function App() {
   const [messageSearchPPP, setMessageSearchPPP] = useState('');
   const [zipCodeSearch, setZipCodeSearch] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState({});
-  const [naicsCode, setNaicsCode] = useState('');
+  const [naicsEnd, setNaicsEnd] = useState('');
+  const [naicsStart, setNaicsStart] = useState('');
   //const connectionsFileInputRef = useRef(null);
   //const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
   //const [allConnections, setAllConnections] = useState([]);
@@ -157,8 +158,12 @@ function App() {
     setZipCodeSearch(event.target.value);
   };
 
-  const handleNaicsCodeChange = (event) => {
-    setNaicsCode(event.target.value);
+  const handleNaicsStartCodeChange = (event) => {
+    setNaicsStart(event.target.value);
+  };
+
+  const handleNaicsEndCodeChange = (event) => {
+    setNaicsEnd(event.target.value);
   };
   
 
@@ -191,8 +196,8 @@ function App() {
   };*/
   const handleCombinedSearchSubmit = async (event) => {
     event.preventDefault();
-    console.log(naicsCode, zipCodeSearch, searchTerm);
-    if (isNaN(zipCodeSearch) && naicsCode == "" && searchTerm == "") {
+    console.log(naicsStart, naicsEnd, zipCodeSearch, searchTerm);
+    if (isNaN(zipCodeSearch) && (naicsStart == "" || naicsEnd == "") && searchTerm == "") {
         setMessageSearchPPP('Input Something or else it explodes'); 
         setResultsSearchPPP([]);
         return
@@ -202,7 +207,8 @@ function App() {
       const documents = await queryDocumentsByFlexibleCriteria(
         searchTerm, 
         zipCodeSearch, 
-        naicsCode
+        naicsStart,
+        naicsEnd
       );
   
       if (documents.length > 0) { 
@@ -345,9 +351,15 @@ function App() {
       />
       <input
         type="text"
-        value={naicsCode}
-        onChange={handleNaicsCodeChange}
-        placeholder="NAICS Code"
+        value={naicsStart}
+        onChange={handleNaicsStartCodeChange}
+        placeholder="NAICS Code Start"
+      />
+      <input
+          type="text"
+          value={naicsEnd}
+          onChange={handleNaicsEndCodeChange}
+          placeholder="NAICS Code End"
       />
       <button type="submit">Search</button>
 
