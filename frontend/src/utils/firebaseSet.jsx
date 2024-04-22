@@ -73,7 +73,7 @@ async function queryDocumentsByZipAndNaicsRange(zipFieldName, zipFieldValue, nai
 }
 
 
-async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStart, naicsEnd) {
+async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStart, naicsEnd, state, selectedDistrict, minLoanAmount, maxLoanAmount) {
     try {
       let conditions = [];
       let queryRef = collection(db, 'ppp');
@@ -86,11 +86,31 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStar
         if (!isNaN(zipCodeNumber)) {
             conditions.push(where('zip', '==', zipCodeNumber));
         }
-    }
-    if (naicsStart && naicsEnd) {
-      conditions.push(where('naics_code', '>=', naicsStart.trim()));
-      conditions.push(where('naics_code', '<=', naicsEnd.trim()));
-    }
+      }
+      if (naicsStart && naicsEnd) {
+        conditions.push(where('naics_code', '>=', naicsStart.trim()));
+        conditions.push(where('naics_code', '<=', naicsEnd.trim()));
+      }
+      if (state) {
+        conditions.push(where('state', '==', state.trim()));
+      }
+      if (selectedDistrict != "All Districts" && selectedDistrict != "" ) {
+        conditions.push(where('cd', '==', selectedDistrict.trim()));
+      }
+
+      if (minLoanAmount) {
+        const minLoanNumber = Number(minLoanAmount.trim());
+        if (!isNaN(minLoanNumber)) {
+            conditions.push(where('loan_amount', '>=', minLoanNumber));
+        }
+      }
+
+      if (maxLoanAmount) {
+        const maxLoanNumber = Number(maxLoanAmount.trim());
+        if (!isNaN(maxLoanNumber)) {
+            conditions.push(where('loan_amount', '<=', maxLoanNumber));
+        }
+      }
   
       if (conditions.length === 0) {
         console.log('No search criteria provided');
