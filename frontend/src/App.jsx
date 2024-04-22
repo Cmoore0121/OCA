@@ -4,7 +4,7 @@ import { readExcel } from './utils/ReadExcel';
 //import parseConnectionsCSV from './utils/ParseConnections';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 //import openAllConnectionWindow from './utils/ManageConnectionsWindow';
-import {queryDocumentsByField, queryDocumentsByZipAndNaicsRange, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
+import {queryDocumentsByField, findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
 
 
 
@@ -14,7 +14,6 @@ import {queryDocumentsByField, queryDocumentsByZipAndNaicsRange, queryDocumentsB
 function App() {
   const [companies, setCompanies] = useState([]);
   const fileInputRef = useRef(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [resultsSearchPPP, setResultsSearchPPP] = useState([]);
   const [messageSearchPPP, setMessageSearchPPP] = useState('');
   const [zipCodeSearch, setZipCodeSearch] = useState('');
@@ -26,6 +25,10 @@ function App() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [minLoanAmount, setMinLoanAmount] = useState('');
   const [maxLoanAmount, setMaxLoanAmount] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [stateSearch, setStateSearch] = useState('');
+  const [resultsNamePPP, setResultsNamePPP] = useState([]);
+  const [messageNamePPP, setMessageNamePPP] = useState('');
 
 
   //const connectionsFileInputRef = useRef(null);
@@ -98,7 +101,8 @@ function App() {
   const fetchAdditionalInfo = async (companiesData) => {
     const info = {};
     for (const company of companiesData) {
-      const documents = await queryDocumentsByField('business_name', company.Name);
+      const adjustedName = company.Name.toLowerCase();
+      const documents = await findBusinessByName(adjustedName, company.Region);
       if (documents.length > 0) {
         const firstDoc = documents[0];
         info[company.Name] = {
@@ -201,12 +205,22 @@ setResultsSearchPPP(sortedResults);
     setNaicsEnd(event.target.value);
   };
   
+  const handlSetInvenBack = (event) => {
+    setCompanies([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleStateChange = (event) => {
       const newState = event.target.value;
       setState(newState);
       fetchDistricts(newState);
   };
+  const handleStateChangeSearch = (event) => {
+    const stateSearchNew = event.target.value;
+    setStateSearch(stateSearchNew);
+};
 
   const handleDistrictChange = (event) => {
       setSelectedDistrict(event.target.value);
@@ -310,7 +324,10 @@ setResultsSearchPPP(sortedResults);
   };*/
   const handleCombinedSearchSubmit = async (event) => {
     event.preventDefault();
-    if (zipCodeSearch == "" && (naicsStart == "" || naicsEnd == "") && searchTerm == "" && state == "") {
+    // Clear previous search results and any messages before starting a new search
+    setResultsSearchPPP([]);
+    setMessageSearchPPP('');
+    if (zipCodeSearch == "" && (naicsStart == "" || naicsEnd == "")  && state == "") {
       if (maxLoanAmount != "" || maxLoanAmount != "" ){
         setMessageSearchPPP('This Search Yields Too Many Results - Please use an additional Feature'); 
       } else {
@@ -319,7 +336,7 @@ setResultsSearchPPP(sortedResults);
       setResultsSearchPPP([]);
       return
     }
-    if (zipCodeSearch === "" && naicsStart === "" && naicsEnd === "" && searchTerm === "" && state !== "" && (maxLoanAmount == "" || minLoanAmount == "")) {
+    if (zipCodeSearch === "" && naicsStart === "" && naicsEnd === "" && state !== "" && (maxLoanAmount == "" || minLoanAmount == "")) {
         setMessageSearchPPP('This Search Yields Too Many Results - Please use an additional Feature');
         setResultsSearchPPP([]);
         return;
@@ -332,7 +349,6 @@ setResultsSearchPPP(sortedResults);
   
     try {
       const documents = await queryDocumentsByFlexibleCriteria(
-        searchTerm, 
         zipCodeSearch, 
         naicsStart,
         naicsEnd,
@@ -355,41 +371,32 @@ setResultsSearchPPP(sortedResults);
       setResultsSearchPPP([]);
     }
   };
-  
 
- /* const handleConnectionsFileChange = (e) => {
-    const file = e.target.files[0];
-    const ocaConnect = prompt("Please enter who at OCA these connections belong to");
-    if (ocaConnect && file) {
-      parseConnectionsCSV(file, ocaConnect, 
-        (parsedConnections) => {
-          // Update state with the parsed connections
-          setConnections(parsedConnections);
-          setIsCSVFileParsed(true)
- 
-        }, 
-        (error) => {
-          // Handle any errors during parsing
-          console.log(error);
-        }
-      );
-    } else {
-      // Handle the case where the user did not input their ocaConnect
-      console.log("ocaConnect is required to parse the CSV.");
+  const handleSearchSubmit = async () => {
+    if (searchTerm.trim() === '' || stateSearch == "") {
+      setResultsNamePPP([]);
+      setMessageNamePPP('Please input a business name and the State it is in');
+      return;
+    }
+    const lcSearch = searchTerm.toLowerCase()
+    try {
+      const documents = await findBusinessByName(lcSearch, stateSearch);
+      if (documents.length > 0) {
+        console.log('Documents found:', documents);
+        setResultsNamePPP(documents);
+        setMessageNamePPP('');
+      } else {
+        console.log('No documents found.');
+        setMessageNamePPP('No results found.');
+        setResultsNamePPP([]);
+      }
+    } catch (error) {
+      console.error('Error performing the search:', error);
+      setMessageNamePPP('Failed to perform search.');
+      setResultsNamePPP([]);
     }
   };
-
-  const addManyConnections = () => {
-    // Iterate over the connections array and make a POST request for each connection
-    connections.forEach(connection => {
-      // Assuming addConnectionToDatabase is a function that makes a POST request to your API
-      addConnectionToDatabase(connection);
-    }); 
-
-    // Optionally, reset state after adding connections
-    setConnections([]);
-    setIsCSVFileParsed(false);
-  };*/
+  
 
 
 
@@ -405,6 +412,9 @@ setResultsSearchPPP(sortedResults);
         <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
         {companies.length > 0 && (
         <button onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
+        )}
+         {companies.length > 0 && (
+        <button onClick={handlSetInvenBack}>Reset Companies</button>
         )}
         <div>
         {companies.length > 0 && (
@@ -424,7 +434,7 @@ setResultsSearchPPP(sortedResults);
                 <tr key={index}>
                   <td>{company.Name || 'N/A'}</td>
                   <td>{company.Website || 'N/A'}</td>
-                  <td>{company["Contact Full Name 1"] || 'N/A'}</td>
+                  <td>{company.Region || 'N/A'}</td>
                   <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].loanAmount : 'Fetching...'}</td>
                   <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].naicsCode : 'Fetching...'}</td>
                   <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].lender : 'Fetching...'}</td>
@@ -434,59 +444,101 @@ setResultsSearchPPP(sortedResults);
           </table>
         )}
       </div>
-      {/*<div>
-        <input
-          type="text"
-          value={zipCodeSearch}
-          onChange={handleZipCodeChange}
-          placeholder="Enter zip code"
-        />
-        <button onClick={handleZipCodeSearchSubmit}>Search by Zip Code</button>
-        {messageSearchPPP && <p>{messageSearchPPP}</p>}
-        {resultsSearchPPP.map(doc => (
-          <div key={doc.id}>
-            <p>Name: {doc.business_name || 'N/A'}, Lender: {doc.lender || 'N/A'}, Amount: {doc.loan_amount || 'N/A'}, NAICS Code: {doc.naics_code || "N/A"}</p>
-            {/* Render other document fields as needed 
-          </div>
-        ))}
-      </div> 
-      */}
-      {/*<form onSubmit={handleSearchSubmit}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchInputChange}
-          placeholder="Enter business name"
-        />
-        <button type="submit">Search</button>
-      </form>
-      {messageSearchPPP && <p>{messageSearchPPP}</p>}
-      {resultsSearchPPP.map(doc => (
-        <div key={doc.id}>
-          <p>Name: {doc.business_name || 'N/A'}, lender: {doc.lender || 'N/A'}, Amount: {doc.loan_amount|| 'N/A'}, NAICS_CODE: {doc.naics_code || "N/A"}</p>
-          {/* Render other document fields as needed 
-        </div>
+      <h2>Search For a Business</h2>
+
+    <div className="search-container">
+  <input
+    type="text"
+    placeholder="Enter business name..."
+    value={searchTerm}
+    onChange={handleSearchInputChange}
+  />
+  <select name="state" value={stateSearch} onChange={handleStateChangeSearch}>
+        <option value="">Select State</option>
+        <option value="AL">AL</option>
+        <option value="AK">AK</option>
+        <option value="AZ">AZ</option>
+        <option value="AR">AR</option>
+        <option value="CA">CA</option>
+        <option value="CO">CO</option>
+        <option value="CT">CT</option>
+        <option value="DE">DE</option>
+        <option value="FL">FL</option>
+        <option value="GA">GA</option>
+        <option value="HI">HI</option>
+        <option value="ID">ID</option>
+        <option value="IL">IL</option>
+        <option value="IN">IN</option>
+        <option value="IA">IA</option>
+        <option value="KS">KS</option>
+        <option value="KY">KY</option>
+        <option value="LA">LA</option>
+        <option value="ME">ME</option>
+        <option value="MD">MD</option>
+        <option value="MA">MA</option>
+        <option value="MI">MI</option>
+        <option value="MN">MN</option>
+        <option value="MS">MS</option>
+        <option value="MO">MO</option>
+        <option value="MT">MT</option>
+        <option value="NE">NE</option>
+        <option value="NV">NV</option>
+        <option value="NH">NH</option>
+        <option value="NJ">NJ</option>
+        <option value="NM">NM</option>
+        <option value="NY">NY</option>
+        <option value="NC">NC</option>
+        <option value="ND">ND</option>
+        <option value="OH">OH</option>
+        <option value="OK">OK</option>
+        <option value="OR">OR</option>
+        <option value="PA">PA</option>
+        <option value="RI">RI</option>
+        <option value="SC">SC</option>
+        <option value="SD">SD</option>
+        <option value="TN">TN</option>
+        <option value="TX">TX</option>
+        <option value="UT">UT</option>
+        <option value="VT">VT</option>
+        <option value="VA">VA</option>
+        <option value="WA">WA</option>
+        <option value="WV">WV</option>
+        <option value="WI">WI</option>
+        <option value="WY">WY</option>
+      </select>
+  <button onClick={handleSearchSubmit}>Search</button>
+{messageNamePPP && <p>{messageNamePPP}</p>}
+{resultsNamePPP.length > 0 && (
+  <table>
+    <thead>
+      <tr>
+        <th>Company Name</th>
+        <th>State</th>
+        <th>Zip Code</th>
+        <th>NAICS Code</th>
+        <th>Loan Amount</th>
+        <th>Lender</th>
+      </tr>
+    </thead>
+    <tbody>
+      {resultsNamePPP.map((doc, index) => (
+        <tr key={index}>
+          <td>{doc.business_name || 'N/A'}</td>
+          <td>{doc.state || 'N/A'}</td>
+          <td>{doc.zip || 'N/A'}</td>
+          <td>{doc.naics_code || 'N/A'}</td>
+          <td>${doc.loan_amount.toLocaleString() || 'N/A'}</td>
+          <td>{doc.lender || 'N/A'}</td>
+        </tr>
       ))}
-    </div>
+    </tbody>
+  </table>
+)}
+
+  
+</div>
+<h2>Browse PPP Data</h2>
     <form onSubmit={handleCombinedSearchSubmit}>
-        <input type="text" value={zipCodeSearch} onChange={handleZipCodeChange} placeholder="Zip Code" />
-        <input type="text" value={naicsCode} onChange={handleNaicsCodeChange} placeholder="NAICS Code" />
-        <button type="submit">Search</button>
-      </form>
-      {messageSearchPPP && <p>{messageSearchPPP}</p>}
-      {resultsSearchPPP.map(doc => (
-        <div key={doc.id}>
-          <p>Name: {doc.business_name}, Zip: {doc.zip}, NAICS: {doc.naics_code}, Amount: {doc.loan_amount}</p>
-        </div>
-      ))}
-    */}
-    <form onSubmit={handleCombinedSearchSubmit}>
-      <input
-        type="text"
-        value={searchTerm}
-        onChange={handleSearchInputChange}
-        placeholder="Enter Business Name"
-      />
       <input
         type="text"
         value={zipCodeSearch}
@@ -593,7 +645,6 @@ setResultsSearchPPP(sortedResults);
          {resultsSearchPPP.length > 0 && (
             <button onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
         )}
-       
     
         <div>
         {resultsSearchPPP.length > 0 && (

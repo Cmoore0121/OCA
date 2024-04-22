@@ -50,37 +50,12 @@ async function queryDocumentsByField(fieldName, fieldValue) {
   }
 }
 
-async function queryDocumentsByZipAndNaicsRange(zipFieldName, zipFieldValue, naicsFieldName, naics ) {
-  try {
-    const q = query(
-      collection(db, 'ppp'),
-      where(zipFieldName, '==', zipFieldValue),
-      where(naicsFieldName, '==', naics),
-    );
 
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(`Found ${documents.length} documents with ${zipFieldName}="${zipFieldValue}" and`, documents);
-      return documents;
-    } else {
-      console.log(`No documents found with ${zipFieldName}="${zipFieldValue}" and in the specified range.`);
-      return [];
-    }
-  } catch (error) {
-    console.error(`Error querying documents by ${zipFieldName} and :`, error);
-  }
-}
-
-
-async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStart, naicsEnd, state, selectedDistrict, minLoanAmount, maxLoanAmount) {
+async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, state, selectedDistrict, minLoanAmount, maxLoanAmount) {
     try {
       let conditions = [];
       let queryRef = collection(db, 'ppp');
   
-      if (businessName) {
-        conditions.push(where('business_name', '==', businessName.trim()));
-      }
       if (zipCode) {
         const zipCodeNumber = Number(zipCode.trim());
         if (!isNaN(zipCodeNumber)) {
@@ -126,7 +101,7 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStar
         console.log(`Found ${documents.length} documents`, documents);
         return documents;
       } else {
-        console.log('No document   penis s found.');
+        console.log('No documents found.');
         return [];
       }
     } catch (error) {
@@ -135,7 +110,76 @@ async function queryDocumentsByFlexibleCriteria(businessName, zipCode, naicsStar
     }
   }
 
+  async function findBusinessByName(businessName, state) {
+    
+    const pppCollection = collection(db, 'ppp');
+    let initialQuery = query(pppCollection, where('business_name', '==', businessName), where("state", "==", state));
+    let results = [];
+    try {
+
+        let querySnapshot = await getDocs(initialQuery);
+  
+        // Check initial full name query results
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach(doc => results.push(doc));
+  
+            if (results.length === 1) {
+                console.log(`Unique match found for full name: ${results[0].id}`, results[0].data());
+                return results.map(doc => ({ id: doc.id, ...doc.data() }));
+            } else {
+                console.log("Multiple matches found for full name, returning all:");
+                results.forEach(doc => {
+                    console.log(`${doc.id}`, doc.data());
+                });
+                return results.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+        }
+  
+        // If no results for full name, proceed with word-by-word search
+        console.log("No exact matches for full name, initiating word-by-word search...");
+        results = [];
+        const words = businessName.split(' ');
+        console.log(words.length);
+        let currentQuery = pppCollection;
+        let lastSuccessfulDocs = []; 
+        currentQuery = query(currentQuery, where("state", "==", state));
+
+        for (let i = 0; i < words.length; i++) {
+            // Add each word condition to the existing query
+            currentQuery = query(currentQuery, where(`business_name_word_${i}`, '==', words[i]));
+
+            // Execute the query
+            const querySnapshot = await getDocs(currentQuery);
+
+            // Check the results of the query
+            if (!querySnapshot.empty) {
+                // Update last successful query and results
+                lastSuccessfulDocs = [];
+                querySnapshot.forEach(doc => lastSuccessfulDocs.push({ id: doc.id, ...doc.data() }));
+            } else {
+                // If no documents are found with the additional word, break the loop
+                break;
+            }
+        }
+
+        // Return the last successful results if the final query found no results
+        if (lastSuccessfulDocs.length > 0) {
+            console.log("Returning last successful results");
+            return lastSuccessfulDocs;
+        } else {
+            console.log("No matches found at any stage");
+            return []; // or handle the case as needed
+        }
+    } catch (error) {
+        console.error("Error searching for business:", error);
+    }
+  
+    return results.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+  
+  
 
 
 
-export {db,  queryDocumentsByField, queryDocumentsByZipAndNaicsRange, queryDocumentsByFlexibleCriteria};
+
+export {db,  queryDocumentsByField, queryDocumentsByFlexibleCriteria, findBusinessByName};
