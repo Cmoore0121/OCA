@@ -38,3 +38,109 @@
     border-bottom: 1px solid #ccc; /* Adds a line between rows */
 }
 
+.App {
+    position: relative;  /* Ensures the child absolute positioning is relative to this container */
+    padding: 10px;       /* Optional: Adds some space inside the container */
+}
+
+.upload-button {
+    position: absolute;
+    top: 140px;          /* Distance from the top of the container */
+    right: 30px;        /* Distance from the right of the container */
+    padding: 20px 30px;  /* Padding for the button, adjust based on your design needs */
+    background-color: rgb(158, 231, 158); /* Green background */
+    color: white;       /* White text */
+    border: none;       /* No border */
+    border-radius: 10px; /* Rounded corners */
+    cursor: pointer; 
+       /* Pointer cursor on hover */
+    font-size: 40px;
+}
+
+.button {
+    padding: 4px 4px;
+    color: black;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 10px; /* This makes the button edges rounded */
+    font-weight: bold; 
+}
+  
+  .blue-button {
+    background-color: blue;
+  }
+  
+  .green-button {
+    background-color: rgb(183, 243, 183);
+  }
+  
+  .red-button {
+    background-color: rgb(240, 165, 165);
+  }
+  .grey-button {
+    background-color: rgb(219, 217, 217);
+  }
+
+
+  input[type="text"] {
+    width: auto;
+    padding: 2px 5px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+input[type="text"]:focus {
+    border-color: #6658d3;
+    box-shadow: 0 0 8px rgba(102, 88, 211, 0.5);
+}
+
+input::placeholder {
+    color: #6c6969;
+    font-weight: lighter;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.form-row {
+
+    margin-bottom: 10px;
+}
+
+@media (max-width: 400px) {
+    input[type="text"] {
+        width: 20%;
+    }
+}
+
+input.error {
+    border-color: red;
+}
+
+input.valid {
+    border-color: green;
+}
+
+.select {
+    padding: 15px 20px;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;    /* Adds more padding inside the dropdown for a larger click area */
+    font-size: 12px;       /* Increases the font size for better readability */
+    border: 1px solid #ccc;/* Optionally, customize the border */
+    border-radius: 5px;    /* Adds rounded corners */
+    cursor: pointer;       /* Changes the mouse cursor to a pointer on hover */
+    width: auto;
+}
+.grey-select {
+    background-color: rgb(244, 241, 241);
+}
+
+.App-header {
+    background-color: #282c34; 
+    color: white;              
+    padding: 10px;             
+    text-align: center;     
+}
