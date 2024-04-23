@@ -5,7 +5,7 @@ import { readExcel } from './utils/ReadExcel';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 //import openAllConnectionWindow from './utils/ManageConnectionsWindow';
 import {queryDocumentsByField, findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
-
+import './assets/styles.css'
 
 
 
@@ -104,18 +104,21 @@ function App() {
       const adjustedName = company.Name.toLowerCase();
       const documents = await findBusinessByName(adjustedName, company.Region);
       if (documents.length > 0) {
-        const firstDoc = documents[0];
-        info[company.Name] = {
-          loanAmount: firstDoc.loan_amount || 'N/A',
-          naicsCode: firstDoc.naics_code || 'N/A',
-          lender: firstDoc.lender || 'N/A'
-        };
+        info[company.Name] = documents.map(doc => ({
+          loanAmount: doc.loan_amount || 'N/A',
+          naicsCode: doc.naics_code || 'N/A',
+          lender: doc.lender || 'N/A',
+          dateApproved: doc.date_approved || 'N/A',
+          businessName: doc.business_name || 'N/A'  // assuming 'business_name' is the field name
+        }));
       } else {
-        info[company.Name] = {
-          loanAmount: 'N/A',
+        info[company.Name] = [{
+          loanAmount:  'N/A',
           naicsCode: 'N/A',
-          lender: 'N/A'
-        };
+          lender: 'N/A',
+          dateApproved:  'N/A',
+          businessName:  'N/A'  // assuming 'business_name' is the field name
+        }];
       }
     }
     setAdditionalInfo(info);
@@ -147,9 +150,30 @@ function App() {
 
   const sortCompaniesByLoanAmount = () => {
     const sortedCompanies = [...companies].sort((a, b) => {
-      const loanA = additionalInfo[a.Name]?.loanAmount === 'N/A' ? -1 : parseInt(additionalInfo[a.Name]?.loanAmount);
-      const loanB = additionalInfo[b.Name]?.loanAmount === 'N/A' ? -1 : parseInt(additionalInfo[b.Name]?.loanAmount);
+      // Check if the company has additional info and at least one loan entry; otherwise, use -1 as a fallback
+      const loanA = additionalInfo[a.Name] && additionalInfo[a.Name][0] && additionalInfo[a.Name][0].loanAmount !== 'N/A'
+        ? parseInt(additionalInfo[a.Name][0].loanAmount)
+        : -1;
+      const loanB = additionalInfo[b.Name] && additionalInfo[b.Name][0] && additionalInfo[b.Name][0].loanAmount !== 'N/A'
+        ? parseInt(additionalInfo[b.Name][0].loanAmount)
+        : -1;
+  
       return loanB - loanA; // For descending order
+    });
+    setCompanies(sortedCompanies);
+  };
+
+  const sortCompaniesByNaics = () => {
+    const sortedCompanies = [...companies].sort((a, b) => {
+      // Check if the company has additional info and at least one NAICS code entry; otherwise, use -1 as a fallback
+      const naicsA = additionalInfo[a.Name] && additionalInfo[a.Name][0] && additionalInfo[a.Name][0].naicsCode !== 'N/A'
+        ? parseInt(additionalInfo[a.Name][0].naicsCode)
+        : -1;
+      const naicsB = additionalInfo[b.Name] && additionalInfo[b.Name][0] && additionalInfo[b.Name][0].naicsCode !== 'N/A'
+        ? parseInt(additionalInfo[b.Name][0].naicsCode)
+        : -1;
+  
+      return naicsB - naicsA; // For descending order by NAICS code
     });
     setCompanies(sortedCompanies);
   };
@@ -210,6 +234,10 @@ setResultsSearchPPP(sortedResults);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleSetSearchBack = (event) => {
+    setResultsSearchPPP([]);
   };
 
   const handleStateChange = (event) => {
@@ -414,36 +442,66 @@ setResultsSearchPPP(sortedResults);
         <button onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
         )}
          {companies.length > 0 && (
+        <button onClick={sortCompaniesByNaics}>Sort by NAICS Code</button>
+        )}
+         {companies.length > 0 && (
         <button onClick={handlSetInvenBack}>Reset Companies</button>
         )}
         <div>
-        {companies.length > 0 && (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Website</th>
-                <th>Contact</th>
-                <th>Loan Amount</th>
-                <th>NAICS Code</th>
-                <th>Lender</th>
-              </tr>
-            </thead>
-            <tbody>
-              {companies.map((company, index) => (
-                <tr key={index}>
-                  <td>{company.Name || 'N/A'}</td>
-                  <td>{company.Website || 'N/A'}</td>
-                  <td>{company.Region || 'N/A'}</td>
-                  <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].loanAmount : 'Fetching...'}</td>
-                  <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].naicsCode : 'Fetching...'}</td>
-                  <td>{additionalInfo[company.Name] ? additionalInfo[company.Name].lender : 'Fetching...'}</td>
+          {companies.length > 0 && (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="table-cell">Name</th>
+                  <th className="table-cell">Website</th>
+                  <th className="table-cell">Region</th>
+                  <th className="table-cell">Company Found</th>
+                  <th className="table-cell">Loan Amount</th>
+                  <th className="table-cell">NAICS Code</th>
+                  <th className="table-cell">Lender</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {companies.map((company, index) => (
+                  <tr key={index} className="table-row">
+                    <td className="table-cell">{company.Name || 'N/A'}</td>
+                    <td className="table-cell">{company.Website || 'N/A'}</td>
+                    <td className="table-cell">{company.Region || 'N/A'}</td>
+                    <td className="table-cell">
+                      {additionalInfo[company.Name]
+                        ? additionalInfo[company.Name].length > 0
+                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.businessName.toUpperCase()}</div>)
+                          : 'N/A'
+                        : 'Fetching...'}
+                    </td>
+                    <td className="table-cell">
+                      {additionalInfo[company.Name]
+                        ? additionalInfo[company.Name].length > 0
+                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">${doc.loanAmount.toLocaleString()}</div>)
+                          : 'N/A'
+                        : 'Fetching...'}
+                    </td>
+                    <td className="table-cell">
+                      {additionalInfo[company.Name]
+                        ? additionalInfo[company.Name].length > 0
+                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.naicsCode}</div>)
+                          : 'N/A'
+                        : 'Fetching...'}
+                    </td>
+                    <td className="table-cell">
+                      {additionalInfo[company.Name]
+                        ? additionalInfo[company.Name].length > 0
+                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.lender}</div>)
+                          : 'N/A'
+                        : 'Fetching...'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
       </div>
+
       <h2>Search For a Business</h2>
 
     <div className="search-container">
@@ -508,35 +566,40 @@ setResultsSearchPPP(sortedResults);
       </select>
   <button onClick={handleSearchSubmit}>Search</button>
 {messageNamePPP && <p>{messageNamePPP}</p>}
-{resultsNamePPP.length > 0 && (
-  <table>
-    <thead>
-      <tr>
-        <th>Company Name</th>
-        <th>State</th>
-        <th>Zip Code</th>
-        <th>NAICS Code</th>
-        <th>Loan Amount</th>
-        <th>Lender</th>
-      </tr>
-    </thead>
-    <tbody>
-      {resultsNamePPP.map((doc, index) => (
-        <tr key={index}>
-          <td>{doc.business_name || 'N/A'}</td>
-          <td>{doc.state || 'N/A'}</td>
-          <td>{doc.zip || 'N/A'}</td>
-          <td>{doc.naics_code || 'N/A'}</td>
-          <td>${doc.loan_amount.toLocaleString() || 'N/A'}</td>
-          <td>{doc.lender || 'N/A'}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-)}
-
-  
-</div>
+          {resultsNamePPP.length > 0 && (
+            <div>
+              <h2>{resultsNamePPP.length} Results</h2>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Company Name</th>
+                    <th>State</th>
+                    <th>Zip Code</th>
+                    <th>NAICS Code</th>
+                    <th>Amount Loaned</th>
+                    <th>Lender</th>
+                    <th>Date Approved</th>
+                    
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultsNamePPP.map((doc, index) => (
+                    <tr key={doc.id || index} className="table-row">
+                      <td>{doc.business_name.toUpperCase() || 'N/A'}</td>
+                      <td>{doc.state || 'N/A'}</td>
+                      <td>{doc.zip || 'N/A'}</td>
+                      <td>{doc.naics_code || 'N/A'}</td>
+                      <td>${doc.loan_amount ? doc.loan_amount.toLocaleString() : 'N/A'}</td>
+                      <td>{doc.lender || 'N/A'}</td>
+                      <td>{doc.date_approved || 'N/A'}</td>
+          
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
 <h2>Browse PPP Data</h2>
     <form onSubmit={handleCombinedSearchSubmit}>
       <input
@@ -645,36 +708,43 @@ setResultsSearchPPP(sortedResults);
          {resultsSearchPPP.length > 0 && (
             <button onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
         )}
-    
-        <div>
         {resultsSearchPPP.length > 0 && (
-      <div>
-        <h2>{resultsSearchPPP.length} Results</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Company Name</th>
-              <th>Zip Code</th>
-              <th>NAICS Code</th>
-              <th>Amount Loaned</th>
-              <th>Lender</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultsSearchPPP.map((doc, index) => (
-              <tr key={doc.id || index}>
-                <td>{doc.business_name || 'N/A'}</td>
-                <td>{doc.zip || 'N/A'}</td>
-                <td>{doc.naics_code || 'N/A'}</td>
-                <td>${doc.loan_amount || 'N/A'}</td>
-                <td>{doc.lender || 'N/A'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-
+        <button onClick={handleSetSearchBack}>Reset Search</button>
+        )}
+        <div>
+          {resultsSearchPPP.length > 0 && (
+            <div>
+              <h2>{resultsSearchPPP.length} Results</h2>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Company Name</th>
+                    <th>State</th>
+                    <th>Zip Code</th>
+                    <th>NAICS Code</th>
+                    <th>Amount Loaned</th>
+                    <th>Lender</th>
+                    <th>Date Approved</th>
+                    
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultsSearchPPP.map((doc, index) => (
+                    <tr key={doc.id || index} className="table-row">
+                      <td>{doc.business_name.toUpperCase() || 'N/A'}</td>
+                      <td>{doc.state || 'N/A'}</td>
+                      <td>{doc.zip || 'N/A'}</td>
+                      <td>{doc.naics_code || 'N/A'}</td>
+                      <td>${doc.loan_amount ? doc.loan_amount.toLocaleString() : 'N/A'}</td>
+                      <td>{doc.lender || 'N/A'}</td>
+                      <td>{doc.date_approved || 'N/A'}</td>
+          
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
     </div>
   );

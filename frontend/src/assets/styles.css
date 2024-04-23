@@ -1,0 +1,40 @@
+.table-cell {
+    padding: 8px;
+    text-align: center; /* Centers text in cells */
+}
+
+.table-cell.name {
+    text-align: left; /* Aligns text to the left for the Name column */
+}
+
+.table-row {
+    border-bottom: 4px solid #060c24; /* Adds a line between rows */
+}
+
+.data-item {
+    display: block; /* Ensures each data item is on a new line */
+    padding: 4px 0; /* Adds vertical padding for spacing */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures borders between cells are shared */
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    border: 1px solid #ccc; /* Adds a subtle border to each cell */
+    padding: 8px;
+    text-align: left; /* Aligns text to the left; adjust as needed */
+}
+
+.table th {
+    background-color: #f4f4f4; /* Light gray background for headers */
+    color: #333; /* Dark text color for contrast */
+}
+
+.table-row {
+    border-bottom: 1px solid #ccc; /* Adds a line between rows */
+}
+
