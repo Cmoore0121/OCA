@@ -4,12 +4,9 @@ import { readExcel } from './utils/ReadExcel';
 //import parseConnectionsCSV from './utils/ParseConnections';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 //import openAllConnectionWindow from './utils/ManageConnectionsWindow';
-import {queryDocumentsByField, findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
+import {findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
 import './assets/styles.css'
-
-
-
-
+import {ResultTable, StateDropdown, StateToDistrict, ResultInven} from './components/ResultTable';
 
 function App() {
   const [companies, setCompanies] = useState([]);
@@ -31,58 +28,10 @@ function App() {
   const [messageNamePPP, setMessageNamePPP] = useState('');
 
 
-  //const connectionsFileInputRef = useRef(null);
-  //const [isCSVFileParsed, setIsCSVFileParsed] = useState(false);
-  //const [allConnections, setAllConnections] = useState([]);
-  //const [connections, setConnections] = useState([]);
-
-
-
-  useEffect(() => {
-    
-  }, []);
-
-  /*const fetchPppCount = async () => {
-    const querySnapshot = await getDocs(collection(db, 'ppp'));
-    setPppCount(querySnapshot.size); // Set the count in state
-  }; */
-
-  /*const fetchConnections = async () => {
-    const response = await fetch("http://127.0.0.1:5000/connections");
-    const data = await response.json();
-    setAllConnections(data.connections);
-  };*/
-
-  // Function to handle the search input change
   const handleSearchInputChange = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  /*const handleSearchSubmit = async (event) => {
-    event.preventDefault();
-    if (searchTerm.trim() === '') {
-      console.log('Please enter a search term.');
-      return;
-    }
-    try {
-      const documents = await queryDocumentsByField('business_name', searchTerm);
-      if (documents.length > 0) {
-        console.log('Documents found:', documents);
-        setMessageSearchPPP('');
-        setResultsSearchPPP(documents);
-      } else {
-        console.log('No documents found.');
-        setMessageSearchPPP('No results found.');  // Set message for no results
-        setResultsSearchPPP([]);
-      }
-    } catch (error) {
-      console.error('Error performing the search:', error);
-      setMessageSearchPPP('Failed to perform search.');  // Set message for error
-      setResultsSearchPPP([]);
-    }
-  };*/
-
-
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -124,41 +73,16 @@ function App() {
     setAdditionalInfo(info);
   };
 
-  /*const handleZipCodeSearchSubmit = async () => {
-    // Convert zipCodeSearch to a number if it's not empty and is a valid number
-    const zipCode = zipCodeSearch.trim() ? Number(zipCodeSearch.trim()) : null;
-    if (!zipCode) {
-      setMessageSearchPPP('Please enter a valid zip code.');
-      setResultsSearchPPP([]);
-      return;
-    }
-    try {
-      const documents = await queryDocumentsByField('zip', zipCode); // Assuming the field is 'zip'
-      if (documents.length > 0) {
-        setMessageSearchPPP('');
-        setResultsSearchPPP(documents);
-      } else {
-        setMessageSearchPPP('No results found for the given zip code.'); 
-        setResultsSearchPPP([]);
-      }
-    } catch (error) {
-      console.error('Error performing the zip code search:', error);
-      setMessageSearchPPP('Failed to perform zip code search.'); 
-      setResultsSearchPPP([]);
-    }
-  };*/
 
   const sortCompaniesByLoanAmount = () => {
     const sortedCompanies = [...companies].sort((a, b) => {
-      // Check if the company has additional info and at least one loan entry; otherwise, use -1 as a fallback
       const loanA = additionalInfo[a.Name] && additionalInfo[a.Name][0] && additionalInfo[a.Name][0].loanAmount !== 'N/A'
         ? parseInt(additionalInfo[a.Name][0].loanAmount)
         : -1;
       const loanB = additionalInfo[b.Name] && additionalInfo[b.Name][0] && additionalInfo[b.Name][0].loanAmount !== 'N/A'
         ? parseInt(additionalInfo[b.Name][0].loanAmount)
         : -1;
-  
-      return loanB - loanA; // For descending order
+      return loanB - loanA; 
     });
     setCompanies(sortedCompanies);
   };
@@ -172,7 +96,6 @@ function App() {
       const naicsB = additionalInfo[b.Name] && additionalInfo[b.Name][0] && additionalInfo[b.Name][0].naicsCode !== 'N/A'
         ? parseInt(additionalInfo[b.Name][0].naicsCode)
         : -1;
-  
       return naicsB - naicsA; // For descending order by NAICS code
     });
     setCompanies(sortedCompanies);
@@ -186,37 +109,35 @@ function App() {
         return loanB - loanA; // Descending order
     });
     setResultsSearchPPP(sortedResults);
-};
-const sortSearchResultsByNaics = () => {
+  };
+  const sortSearchResultsByNaics = () => {
+    const sortedResults = [...resultsSearchPPP].sort((a, b) => {
+        // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
+        const naicsA = parseInt(a.naics_code) || 0;
+        const naicsB = parseInt(b.naics_code) || 0;
+        return naicsB - naicsA; // Descending order
+    });
+    setResultsSearchPPP(sortedResults);
+  };
+
+  const sortSearchResultsByLoanAmountOther = () => {
+    const sortedResults = [...resultsSearchPPP].sort((a, b) => {
+        // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
+        const loanA = parseInt(a.loan_amount) || 0;
+        const loanB = parseInt(b.loan_amount) || 0;
+        return loanA - loanB; // Descending order
+    });
+    setResultsSearchPPP(sortedResults);
+  };
+  const sortSearchResultsByNaicsOther = () => {
   const sortedResults = [...resultsSearchPPP].sort((a, b) => {
       // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
       const naicsA = parseInt(a.naics_code) || 0;
       const naicsB = parseInt(b.naics_code) || 0;
-      return naicsB - naicsA; // Descending order
+      return naicsA - naicsB; // Descending order
   });
   setResultsSearchPPP(sortedResults);
-};
-
-const sortSearchResultsByLoanAmountOther = () => {
-  const sortedResults = [...resultsSearchPPP].sort((a, b) => {
-      // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
-      const loanA = parseInt(a.loan_amount) || 0;
-      const loanB = parseInt(b.loan_amount) || 0;
-      return loanA - loanB; // Descending order
-  });
-  setResultsSearchPPP(sortedResults);
-};
-const sortSearchResultsByNaicsOther = () => {
-const sortedResults = [...resultsSearchPPP].sort((a, b) => {
-    // Convert loan amounts to integers for comparison; handle missing or non-numeric values as 0
-    const naicsA = parseInt(a.naics_code) || 0;
-    const naicsB = parseInt(b.naics_code) || 0;
-    return naicsA - naicsB; // Descending order
-});
-setResultsSearchPPP(sortedResults);
-};
-
-
+  };
   const handleZipCodeChange = (event) => {
     setZipCodeSearch(event.target.value);
   };
@@ -228,7 +149,7 @@ setResultsSearchPPP(sortedResults);
   const handleNaicsEndCodeChange = (event) => {
     setNaicsEnd(event.target.value);
   };
-  
+    
   const handlSetInvenBack = (event) => {
     setCompanies([]);
     if (fileInputRef.current) {
@@ -238,6 +159,12 @@ setResultsSearchPPP(sortedResults);
 
   const handleSetSearchBack = (event) => {
     setResultsSearchPPP([]);
+    setNaicsEnd("");
+    setNaicsStart("");
+    setZipCodeSearch("");
+    setMaxLoanAmount("");
+    setMinLoanAmount("");
+    setStateSearch("");
   };
 
   const handleStateChange = (event) => {
@@ -248,10 +175,10 @@ setResultsSearchPPP(sortedResults);
   const handleStateChangeSearch = (event) => {
     const stateSearchNew = event.target.value;
     setStateSearch(stateSearchNew);
-};
+  };
 
   const handleDistrictChange = (event) => {
-      setSelectedDistrict(event.target.value);
+    setSelectedDistrict(event.target.value);
   };
 
   const fetchDistricts = (stateCode) => {
@@ -323,33 +250,6 @@ setResultsSearchPPP(sortedResults);
     setMaxLoanAmount(event.target.value);
   };
 
-  /*const handleCombinedSearchSubmit = async () => {
-    event.preventDefault();
-    const zipCodeNumber = Number(zipCodeSearch.trim());
-    const naicsNumber = naicsCode.trim();
-    if (isNaN(zipCodeNumber) || naicsNumber == "") {
-      setMessageSearchPPP('Please enter valid numerical values for zip code and NAICS code range.');
-      setResultsSearchPPP([]);
-      return;
-    }
-
-    try {
-      const documents = await queryDocumentsByZipAndNaicsRange('zip', zipCodeNumber, 'naics_code', naicsNumber);
-      if (documents.length > 0) { 
-        setMessageSearchPPP('');
-        setResultsSearchPPP(documents);
-      } else {
-        setMessageSearchPPP('No results found for the given zip code.'); 
-        setResultsSearchPPP([]);
-      }
-      // ... handle results
-    } catch (error) {
-      // ... handle errors
-      console.error('Error performing the zipnaics code search:', error);
-      setMessageSearchPPP('Failed to perform zipnaics code search.'); 
-      setResultsSearchPPP([]);
-    }
-  };*/
   const handleCombinedSearchSubmit = async (event) => {
     event.preventDefault();
     // Clear previous search results and any messages before starting a new search
@@ -359,7 +259,7 @@ setResultsSearchPPP(sortedResults);
       if (maxLoanAmount != "" || maxLoanAmount != "" ){
         setMessageSearchPPP('This Search Yields Too Many Results - Please use an additional Feature'); 
       } else {
-        setMessageSearchPPP('Please Input at Least 1 Search Requirement');
+        setMessageSearchPPP('Please Input at Least 2 Search Requirements');
       }
       setResultsSearchPPP([]);
       return
@@ -426,10 +326,11 @@ setResultsSearchPPP(sortedResults);
   };
   
 
-
-
   return (
-      <div className="App">
+    <div className="App">
+        <header className="App-header">
+            <h1>OCA Ventures</h1>  
+        </header>
         <input
           type="file"
           ref={fileInputRef}
@@ -437,315 +338,112 @@ setResultsSearchPPP(sortedResults);
           style={{ display: 'none' }}
           accept='.xlsx'
         /> 
-        <button onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
+        <button className="button green-button" onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
+        <p></p>
         {companies.length > 0 && (
-        <button onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
+        <button className='button grey-button' onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
         )}
          {companies.length > 0 && (
-        <button onClick={sortCompaniesByNaics}>Sort by NAICS Code</button>
+        <button className='button grey-button'  onClick={sortCompaniesByNaics}>Sort by NAICS Code</button>
         )}
          {companies.length > 0 && (
-        <button onClick={handlSetInvenBack}>Reset Companies</button>
+        <button className='button grey-button'  onClick={handlSetInvenBack}>Reset Companies</button>
         )}
         <div>
           {companies.length > 0 && (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th className="table-cell">Name</th>
-                  <th className="table-cell">Website</th>
-                  <th className="table-cell">Region</th>
-                  <th className="table-cell">Company Found</th>
-                  <th className="table-cell">Loan Amount</th>
-                  <th className="table-cell">NAICS Code</th>
-                  <th className="table-cell">Lender</th>
-                </tr>
-              </thead>
-              <tbody>
-                {companies.map((company, index) => (
-                  <tr key={index} className="table-row">
-                    <td className="table-cell">{company.Name || 'N/A'}</td>
-                    <td className="table-cell">{company.Website || 'N/A'}</td>
-                    <td className="table-cell">{company.Region || 'N/A'}</td>
-                    <td className="table-cell">
-                      {additionalInfo[company.Name]
-                        ? additionalInfo[company.Name].length > 0
-                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.businessName.toUpperCase()}</div>)
-                          : 'N/A'
-                        : 'Fetching...'}
-                    </td>
-                    <td className="table-cell">
-                      {additionalInfo[company.Name]
-                        ? additionalInfo[company.Name].length > 0
-                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">${doc.loanAmount.toLocaleString()}</div>)
-                          : 'N/A'
-                        : 'Fetching...'}
-                    </td>
-                    <td className="table-cell">
-                      {additionalInfo[company.Name]
-                        ? additionalInfo[company.Name].length > 0
-                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.naicsCode}</div>)
-                          : 'N/A'
-                        : 'Fetching...'}
-                    </td>
-                    <td className="table-cell">
-                      {additionalInfo[company.Name]
-                        ? additionalInfo[company.Name].length > 0
-                          ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.lender}</div>)
-                          : 'N/A'
-                        : 'Fetching...'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ResultInven companies={companies}  additionalInfo={additionalInfo}/>
           )}
       </div>
 
+
       <h2>Search For a Business</h2>
 
-    <div className="search-container">
-  <input
-    type="text"
-    placeholder="Enter business name..."
-    value={searchTerm}
-    onChange={handleSearchInputChange}
-  />
-  <select name="state" value={stateSearch} onChange={handleStateChangeSearch}>
-        <option value="">Select State</option>
-        <option value="AL">AL</option>
-        <option value="AK">AK</option>
-        <option value="AZ">AZ</option>
-        <option value="AR">AR</option>
-        <option value="CA">CA</option>
-        <option value="CO">CO</option>
-        <option value="CT">CT</option>
-        <option value="DE">DE</option>
-        <option value="FL">FL</option>
-        <option value="GA">GA</option>
-        <option value="HI">HI</option>
-        <option value="ID">ID</option>
-        <option value="IL">IL</option>
-        <option value="IN">IN</option>
-        <option value="IA">IA</option>
-        <option value="KS">KS</option>
-        <option value="KY">KY</option>
-        <option value="LA">LA</option>
-        <option value="ME">ME</option>
-        <option value="MD">MD</option>
-        <option value="MA">MA</option>
-        <option value="MI">MI</option>
-        <option value="MN">MN</option>
-        <option value="MS">MS</option>
-        <option value="MO">MO</option>
-        <option value="MT">MT</option>
-        <option value="NE">NE</option>
-        <option value="NV">NV</option>
-        <option value="NH">NH</option>
-        <option value="NJ">NJ</option>
-        <option value="NM">NM</option>
-        <option value="NY">NY</option>
-        <option value="NC">NC</option>
-        <option value="ND">ND</option>
-        <option value="OH">OH</option>
-        <option value="OK">OK</option>
-        <option value="OR">OR</option>
-        <option value="PA">PA</option>
-        <option value="RI">RI</option>
-        <option value="SC">SC</option>
-        <option value="SD">SD</option>
-        <option value="TN">TN</option>
-        <option value="TX">TX</option>
-        <option value="UT">UT</option>
-        <option value="VT">VT</option>
-        <option value="VA">VA</option>
-        <option value="WA">WA</option>
-        <option value="WV">WV</option>
-        <option value="WI">WI</option>
-        <option value="WY">WY</option>
-      </select>
-  <button onClick={handleSearchSubmit}>Search</button>
-{messageNamePPP && <p>{messageNamePPP}</p>}
+      <div className="search-container">
+      <input
+        type="text"
+        placeholder="Enter business name..."
+        value={searchTerm}
+        onChange={handleSearchInputChange}
+      />
+      <StateDropdown state={stateSearch} handler={handleStateChangeSearch} />
+      <button className='button grey-button' onClick={handleSearchSubmit}>Search</button>
+      {messageNamePPP && <p>{messageNamePPP}</p>}
           {resultsNamePPP.length > 0 && (
             <div>
-              <h2>{resultsNamePPP.length} Results</h2>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Company Name</th>
-                    <th>State</th>
-                    <th>Zip Code</th>
-                    <th>NAICS Code</th>
-                    <th>Amount Loaned</th>
-                    <th>Lender</th>
-                    <th>Date Approved</th>
-                    
-                  </tr>
-                </thead>
-                <tbody>
-                  {resultsNamePPP.map((doc, index) => (
-                    <tr key={doc.id || index} className="table-row">
-                      <td>{doc.business_name.toUpperCase() || 'N/A'}</td>
-                      <td>{doc.state || 'N/A'}</td>
-                      <td>{doc.zip || 'N/A'}</td>
-                      <td>{doc.naics_code || 'N/A'}</td>
-                      <td>${doc.loan_amount ? doc.loan_amount.toLocaleString() : 'N/A'}</td>
-                      <td>{doc.lender || 'N/A'}</td>
-                      <td>{doc.date_approved || 'N/A'}</td>
-          
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h3>{resultsNamePPP.length} Results</h3>
+              <ResultTable results={resultsNamePPP} />
             </div>
           )}
-        </div>
-<h2>Browse PPP Data</h2>
-    <form onSubmit={handleCombinedSearchSubmit}>
-      <input
-        type="text"
-        value={zipCodeSearch}
-        onChange={handleZipCodeChange}
-        placeholder="Zip Code"
-      />
-      <input
-        type="text"
-        value={naicsStart}
-        onChange={handleNaicsStartCodeChange}
-        placeholder="NAICS Code Range Start"
-      />
-      <input
-          type="text"
-          value={naicsEnd}
-          onChange={handleNaicsEndCodeChange}
-          placeholder="NAICS Code Range End"
-      />
-      <select name="state" value={state} onChange={handleStateChange}>
-        <option value="">Select State</option>
-        <option value="AL">AL</option>
-        <option value="AK">AK</option>
-        <option value="AZ">AZ</option>
-        <option value="AR">AR</option>
-        <option value="CA">CA</option>
-        <option value="CO">CO</option>
-        <option value="CT">CT</option>
-        <option value="DE">DE</option>
-        <option value="FL">FL</option>
-        <option value="GA">GA</option>
-        <option value="HI">HI</option>
-        <option value="ID">ID</option>
-        <option value="IL">IL</option>
-        <option value="IN">IN</option>
-        <option value="IA">IA</option>
-        <option value="KS">KS</option>
-        <option value="KY">KY</option>
-        <option value="LA">LA</option>
-        <option value="ME">ME</option>
-        <option value="MD">MD</option>
-        <option value="MA">MA</option>
-        <option value="MI">MI</option>
-        <option value="MN">MN</option>
-        <option value="MS">MS</option>
-        <option value="MO">MO</option>
-        <option value="MT">MT</option>
-        <option value="NE">NE</option>
-        <option value="NV">NV</option>
-        <option value="NH">NH</option>
-        <option value="NJ">NJ</option>
-        <option value="NM">NM</option>
-        <option value="NY">NY</option>
-        <option value="NC">NC</option>
-        <option value="ND">ND</option>
-        <option value="OH">OH</option>
-        <option value="OK">OK</option>
-        <option value="OR">OR</option>
-        <option value="PA">PA</option>
-        <option value="RI">RI</option>
-        <option value="SC">SC</option>
-        <option value="SD">SD</option>
-        <option value="TN">TN</option>
-        <option value="TX">TX</option>
-        <option value="UT">UT</option>
-        <option value="VT">VT</option>
-        <option value="VA">VA</option>
-        <option value="WA">WA</option>
-        <option value="WV">WV</option>
-        <option value="WI">WI</option>
-        <option value="WY">WY</option>
-      </select>
-      {state && (
-                <select name="district" value={selectedDistrict} onChange={handleDistrictChange}>
-                    <option value="">Select Congressional District</option>
-                    {districts.map(district => (
-                        <option key={district} value={district}>{district}</option>
-                    ))}
-                </select>
-            )}
-      <input
-        type="text"
-        value={minLoanAmount}
-        onChange={handleMinLoanAmountChange}
-        placeholder="Minimum Loan Amount"
-      />
-      <input
-        type="text"
-        value={maxLoanAmount}
-        onChange={handleMaxLoanAmountChange}
-        placeholder="Maximum Loan Amount"
-      />
-      <button type="submit">Search</button>
-    </form>
-    {messageSearchPPP && <p>{messageSearchPPP}</p>}
-        {resultsSearchPPP.length > 0 && (
-            <button onClick={sortSearchResultsByLoanAmount}>Sort by Loan Amount - Descending</button>
-        )}
-         {resultsSearchPPP.length > 0 && (
-            <button onClick={sortSearchResultsByLoanAmountOther}>Sort by Loan Amount - Ascending</button>
-        )}
-        {resultsSearchPPP.length > 0 && (
-            <button onClick={sortSearchResultsByNaics}>Sort by Naics Code - Descending</button>
-        )}
-         {resultsSearchPPP.length > 0 && (
-            <button onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
-        )}
-        {resultsSearchPPP.length > 0 && (
-        <button onClick={handleSetSearchBack}>Reset Search</button>
-        )}
-        <div>
-          {resultsSearchPPP.length > 0 && (
-            <div>
-              <h2>{resultsSearchPPP.length} Results</h2>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Company Name</th>
-                    <th>State</th>
-                    <th>Zip Code</th>
-                    <th>NAICS Code</th>
-                    <th>Amount Loaned</th>
-                    <th>Lender</th>
-                    <th>Date Approved</th>
-                    
-                  </tr>
-                </thead>
-                <tbody>
-                  {resultsSearchPPP.map((doc, index) => (
-                    <tr key={doc.id || index} className="table-row">
-                      <td>{doc.business_name.toUpperCase() || 'N/A'}</td>
-                      <td>{doc.state || 'N/A'}</td>
-                      <td>{doc.zip || 'N/A'}</td>
-                      <td>{doc.naics_code || 'N/A'}</td>
-                      <td>${doc.loan_amount ? doc.loan_amount.toLocaleString() : 'N/A'}</td>
-                      <td>{doc.lender || 'N/A'}</td>
-                      <td>{doc.date_approved || 'N/A'}</td>
-          
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      </div>
+
+
+      <h2>Browse PPP Data</h2>
+      <p>Input Filters Below</p>
+      <form onSubmit={handleCombinedSearchSubmit}>
+        <div className="form-container">
+            <div className="form-row">
+                <input
+                    type="text"
+                    value={zipCodeSearch}
+                    onChange={handleZipCodeChange}
+                    placeholder="Zip Code"
+                />
+                <input
+                    type="text"
+                    value={naicsStart}
+                    onChange={handleNaicsStartCodeChange}
+                    placeholder="NAICS Code Range Start"
+                />
+                <input
+                    type="text"
+                    value={naicsEnd}
+                    onChange={handleNaicsEndCodeChange}
+                    placeholder="NAICS Code Range End"
+                />
+                <input
+                  type="text"
+                  value={minLoanAmount}
+                  onChange={handleMinLoanAmountChange}
+                  placeholder="Minimum Loan Amount"
+                />
+                <input
+                  type="text"
+                  value={maxLoanAmount}
+                  onChange={handleMaxLoanAmountChange}
+                  placeholder="Maximum Loan Amount"
+                />
+                 <StateDropdown state={state} handler={handleStateChange} />
+                 <StateToDistrict state={state} selectedDistrict={selectedDistrict} handleDistrictChange={handleDistrictChange} districts={districts}/>
+                 <button className='button grey-button' type="submit">Search</button>
             </div>
-          )}
         </div>
+       
+
+      </form>
+      {messageSearchPPP && <p>{messageSearchPPP}</p>}
+      {resultsSearchPPP.length > 0 && (
+            <button className="button red-button" onClick={sortSearchResultsByLoanAmount}>Sort by Loan Amount - Descending</button>
+      )}
+      {resultsSearchPPP.length > 0 && (
+            <button className="button green-button" onClick={sortSearchResultsByLoanAmountOther}>Sort by Loan Amount - Ascending</button>
+      )}
+      {resultsSearchPPP.length > 0 && (
+            <button className="button red-button"onClick={sortSearchResultsByNaics}>Sort by Naics Code - Descending</button>
+      )}
+      {resultsSearchPPP.length > 0 && (
+            <button className="button green-button" onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
+      )}
+      {resultsSearchPPP.length > 0 && (
+      <button className="button grey-button" onClick={handleSetSearchBack}>Reset Search</button>
+      )}
+      <div>
+        {resultsSearchPPP.length > 0 && (
+          <h3>{resultsSearchPPP.length} Results</h3>
+        )}
+        {resultsSearchPPP.length > 0 && (
+          <ResultTable results={resultsSearchPPP} />
+        )}
+      </div>
     </div>
   );
 }
