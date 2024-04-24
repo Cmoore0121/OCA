@@ -26,7 +26,25 @@
 .table td {
     border: 1px solid #ccc; /* Adds a subtle border to each cell */
     padding: 8px;
-    text-align: left; /* Aligns text to the left; adjust as needed */
+    text-align: center; /* Aligns text to the left; adjust as needed */
+}
+.icon-border {
+    display: inline-block; /* Allows applying padding and border */
+    border: 2px solid black; /* Sets the border color and thickness */
+    border-radius: 50%; /* Optional: makes the border rounded */
+    padding: 5px; /* Adjust based on the size of your icon */
+}
+
+.scrollable-cell {
+    max-width: 400px;
+    max-height: 3em;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: row; /* Ensures content flows vertically */
+    justify-content: center; /* Centers content vertically if less than max-height */
+    line-height: 1.5em;
+    word-wrap: break-word;
+
 }
 
 .table th {
@@ -67,7 +85,7 @@
 }
   
   .blue-button {
-    background-color: blue;
+    background-color: rgb(50, 202, 236);
   }
   
   .green-button {
@@ -143,4 +161,36 @@ input.valid {
     color: white;              
     padding: 10px;             
     text-align: center;     
+}
+
+.center-icon {
+    text-align: center; /* Centers the content horizontally */
+    vertical-align: middle; /* Centers the content vertically */
+    display: table-cell; /* Ensures the cell behaves like a table cell for alignment */
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
 }
