@@ -101,6 +101,14 @@ async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, 
         // If no results for full name, proceed with word-by-word search
         console.log("No exact matches for full name, initiating word-by-word search...");
         results = [];
+        // To DO
+        // COMMMAS 
+        // Coleman & Associates 
+        // "coleman" "" "associates"
+        // Prado, renteria, peis
+        // "prado" "reenteria" "peis"
+
+
         const words = businessName.split(' ');
         console.log(words.length);
         let currentQuery = pppCollection;
