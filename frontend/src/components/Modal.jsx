@@ -14,19 +14,23 @@ const Modal = ({ isOpen, onClose, children }) => {
 };
 
 
-const LinkedInButton = ({ url }) => {
+const LinkedInButton = ({ url, text }) => {
     const handleClick = () => {
         // Ensure the URL starts with http:// or https://
-        if(url.startsWith('http://') || url.startsWith('https://')) {
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
             window.open(url, '_blank', 'noopener,noreferrer');
         } else {
             console.error('Provided URL is not valid:', url);
         }
     };
 
+    if (!url) {
+        return <p>NO URL available</p>;
+    }
+
     return (
         <button className='button blue-button' onClick={handleClick} style={{ cursor: 'pointer' }}>
-            Click to go to LinkedIn Page
+            {text}
         </button>
     );
 };

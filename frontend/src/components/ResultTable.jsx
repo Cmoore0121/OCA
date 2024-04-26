@@ -8,6 +8,7 @@ import {Modal, LinkedInButton} from './Modal';
 const ResultTable = ({ results }) => {
     // Initialize state to track favorites
     const [favorites, setFavorites] = useState(new Array(results.length).fill(false));
+    
 
 
     const toggleFavorite = (index) => {
@@ -130,124 +131,13 @@ const StateToDistrict = ({ state, selectedDistrict, handleDistrictChange, distri
 );
 
 
-/*const ResultInven = ({ companies, additionalInfo }) => {
-  // Initialize the state at the top level of the component
-  const [favoritesInven, setFavoritesInven] = useState(new Array(companies.length).fill(false));
 
-  // Function to toggle favorites
-  const toggleFavorite = (index) => {
-      const newFavorites = [...favoritesInven];
-      newFavorites[index] = !newFavorites[index];
-      setFavoritesInven(newFavorites);
-  };
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentInfo, setCurrentInfo] = useState({});
-
-    const openModal = (info) => {
-        setCurrentInfo(info);
-        setIsModalOpen(true);
-    };
-
-
-  // Properly return JSX using return statement
-  return (
-      <table className="table">
-          <thead>
-              <tr>
-                <th className="table-cell">Favorite</th>
-                  <th className="table-cell">Name</th>
-                  <th className="table-cell">Website</th>
-                  <th className="table-cell">Region</th>
-                  <th className="table-cell">Blurb</th>
-                  <th className="table-cell">PPP Company Found</th>
-                  <th className="table-cell">Loan Amount</th>
-                  <th className="table-cell">NAICS Code</th>
-                  <th className="table-cell">Lender</th>
-                  <th>More Information</th>
-              </tr>
-          </thead>
-          <tbody>
-              {companies.map((company, index) => (
-                  <tr key={index} className="table-row">
-                      <td>
-                          <span className='icon-border'>
-                              <FontAwesomeIcon 
-                                  icon={favoritesInven[index] ? fasStar : farStar} 
-                                  onClick={() => toggleFavorite(index)} 
-                                  size='md'
-                                  style={{ color: favoritesInven[index] ? 'green' : 'gray', cursor: 'pointer' }}
-                              />
-                          </span>
-                      </td>
-                      <td className="table-cell">{company.Name || 'N/A'}</td>
-                      <td className="table-cell">{company.Website || 'N/A'}</td>
-                      <td className="table-cell">{company.Region || 'N/A'}</td>
-                      <td className="table-cell scrollable-cell"> {company.Description || 'N/A'}</td>
-                      <td className="table-cell">
-                          {additionalInfo[company.Name]
-                              ? additionalInfo[company.Name].length > 0
-                                  ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.businessName.toUpperCase()}</div>)
-                                  : 'N/A'
-                              : 'Fetching...'}
-                      </td>
-                      <td className="table-cell">
-                          {additionalInfo[company.Name]
-                              ? additionalInfo[company.Name].length > 0
-                                  ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">${doc.loanAmount.toLocaleString()}</div>)
-                                  : 'N/A'
-                              : 'Fetching...'}
-                      </td>
-                      <td className="table-cell">
-                          {additionalInfo[company.Name]
-                              ? additionalInfo[company.Name].length > 0
-                                  ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.naicsCode}</div>)
-                                  : 'N/A'
-                              : 'Fetching...'}
-                      </td>
-                      <td className="table-cell">
-                          {additionalInfo[company.Name]
-                              ? additionalInfo[company.Name].length > 0
-                                  ? additionalInfo[company.Name].map((doc, idx) => <div key={idx} className="data-item">{doc.lender}</div>)
-                                  : 'N/A'
-                              : 'Fetching...'}
-                      </td>
-                      <td>
-                        <button onClick={() => openModal(company)}>
-                              More Information
-                          </button>
-                        </td>
-                  </tr>
-              ))}
-          </tbody>
-      </table>
-       {currentCompany && (
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <h3>{currentCompany.Name}</h3>
-            <p>State: {currentCompany.State}</p>
-            <p>Zip Code: {currentCompany.Zip}</p>
-            <p>NAICS Code: {currentCompany.NAICSCode}</p>
-            <p>Amount Loaned: ${currentCompany.LoanAmount?.toLocaleString()}</p>
-            <p>Lender: {currentCompany.Lender}</p>
-            <p>Date Approved: {currentCompany.DateApproved}</p>
-            {/* Include more fields as necessary 
-        </Modal>
-    )}
-</>
-        
-  );
-}; */
-
-const ResultInven = ({ companies, additionalInfo }) => {
-  const [favoritesInven, setFavoritesInven] = useState(new Array(companies.length).fill(false));
+const ResultInven = ({ companies, additionalInfo, favorites, toggleFavorite }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCompany, setCurrentCompany] = useState(null);
 
-  const toggleFavorite = (index) => {
-      const newFavorites = [...favoritesInven];
-      newFavorites[index] = !newFavorites[index];
-      setFavoritesInven(newFavorites);
-  };
+
+
 
   const openModal = (company) => {
       setCurrentCompany(company);
@@ -275,17 +165,15 @@ const ResultInven = ({ companies, additionalInfo }) => {
                   {companies.map((company, index) => (
                       <tr key={index}>
                           <td>
-                              <span className='icon-border'>
                                   <FontAwesomeIcon 
-                                      icon={favoritesInven[index] ? fasStar : farStar} 
-                                      onClick={() => toggleFavorite(index)} 
-                                      size='md'
-                                      style={{ color: favoritesInven[index] ? 'green' : 'gray', cursor: 'pointer' }}
+                                    icon={favorites.includes(company) ? fasStar : farStar} 
+                                    onClick={() => toggleFavorite(company)} 
+                                    size='lg'
+                                    style={{ color: favorites.includes(company) ? 'green' : 'gray', cursor: 'pointer' }}
                                   />
-                              </span>
                           </td>
                       <td className="table-cell">{company.Name || 'N/A'}</td>
-                      <td className="table-cell">{company.Website || 'N/A'}</td>
+                      <td className="table-cell">{<LinkedInButton url={"https://" + company.Website} text={company.Website} />}</td>
                       <td className="table-cell">{company.Region || 'N/A'}</td>
                       <td className="table-cell">{company.Industry || 'N/A'}</td>
                       {/*<td className="table-cell scrollable-cell"> {company.Description || 'N/A'}</td>*/}
@@ -319,7 +207,7 @@ const ResultInven = ({ companies, additionalInfo }) => {
                       </td>
                           {/* Additional cells for dynamic information */}
                           <td>
-                              <button onClick={() => openModal(company)}>More Information</button>
+                              <button className= "button green-button" onClick={() => openModal(company)}>Click Here</button>
                           </td>
                       </tr>
                   ))}
@@ -328,16 +216,34 @@ const ResultInven = ({ companies, additionalInfo }) => {
           {currentCompany && (
               <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                   <h3>{currentCompany.Name}</h3>
-                  <p>Description: </p>
-                  <p>{currentCompany.Description}</p>
-                  <p>Employee Count (LinkedIn) : </p>
-                  <p>{currentCompany["Employees Count (LinkedIn)"]}</p>
-                  <p>Ownership Type: </p>
-                  <p>{currentCompany["Ownership Type"]}</p>
-                  <LinkedInButton url={currentCompany["Linkedin Url"]} />
-                  <p>Contact: ({currentCompany["Contact Full Name 1"]} || "N/A")</p>
-                  {/* Include more fields as necessary */}
-              </Modal>
+                  <p><span style={{ fontSize: "larger" }} > Description</span> </p>
+                  <p><span style={{ fontSize: "larger" }} >{currentCompany.Description}</span></p>
+                <table className="table">
+                <thead>
+                    <tr>
+                      <th>Employee Count (LinkedIn)</th>
+                      <th>Ownership Type</th>
+                      <th>Linked In Page</th>
+
+                    </tr>
+                </thead>
+                    <tbody>
+                        <td className="table-cell">{currentCompany["Employees Count (LinkedIn)"]}</td>
+                        <td className="table-cell">{currentCompany["Ownership Type"]}</td>
+                        <td><LinkedInButton url={currentCompany["Linkedin Url"]} text={"Go to LinkedInPage"}/></td>
+                        {/* Include more fields as necessary */}
+                    </tbody>
+                </table>
+                <div>
+                    <p>
+                    <span style={{ fontSize: "larger" }}>
+                        Contact: {currentCompany["Contact Full Name 1"] ? currentCompany["Contact Full Name 1"] + '\t' : "N/A"}
+                    </span>                 
+                        <LinkedInButton url={currentCompany["Contact LinkedIn 1"]} text={"See LinkedIn Profile"} />
+                    </p>
+                    <p>Primary Email Addr: {currentCompany["Primary E-mail address 1"] ? currentCompany["Primary E-mail address 1"] + '\t' : "N/A"}</p>
+                </div>
+                </Modal>
           )}
       </>
   );

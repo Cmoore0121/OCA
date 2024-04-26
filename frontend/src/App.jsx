@@ -7,6 +7,9 @@ import { readExcel } from './utils/ReadExcel';
 import {findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
 import './assets/styles.css'
 import {ResultTable, StateDropdown, StateToDistrict, ResultInven} from './components/ResultTable';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   const [companies, setCompanies] = useState([]);
@@ -26,6 +29,9 @@ function App() {
   const [stateSearch, setStateSearch] = useState('');
   const [resultsNamePPP, setResultsNamePPP] = useState([]);
   const [messageNamePPP, setMessageNamePPP] = useState('');
+  const [activeTab, setActiveTab] = useState('upload'); 
+  const [activeSubTabFavs, setActiveSubTabFavs] = useState('seeNew'); 
+  const [favoritesInven, setFavoritesInven] = useState([]);
 
 
   const handleSearchInputChange = (event) => {
@@ -59,6 +65,7 @@ function App() {
           lender: doc.lender || 'N/A',
           dateApproved: doc.date_approved || 'N/A',
           businessName: doc.business_name || 'N/A'  // assuming 'business_name' is the field name
+
         }));
       } else {
         info[company.Name] = [{
@@ -151,10 +158,14 @@ function App() {
   };
     
   const handlSetInvenBack = (event) => {
+    setAdditionalInfo([]);
     setCompanies([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+  const handleSetBusinessSearchBack = (event) => {
+    setResultsNamePPP([]);
   };
 
   const handleSetSearchBack = (event) => {
@@ -306,11 +317,14 @@ function App() {
       setMessageNamePPP('Please input a business name and the State it is in');
       return;
     }
-    
+
     const lcSearch = searchTerm.toLowerCase()
     try {
       const documents = await findBusinessByName(lcSearch, stateSearch);
-      if (documents.length > 0) {
+      if (documents[0] == 0) {
+        setMessageNamePPP('The search found a lot of companies with the first word matching your input. \n Try being more specific and ensure you have the correct spelling of the subsequenct words');
+        setResultsNamePPP([]);
+      } else if (documents.length > 0) {
         console.log('Documents found:', documents);
         setResultsNamePPP(documents);
         setMessageNamePPP('');
@@ -325,129 +339,241 @@ function App() {
       setResultsNamePPP([]);
     }
   };
+
+  const addToFavoritesInven = (company) => {
+    setFavoritesInven(prevFavorites => [...prevFavorites, company]);
+  };
+
+  const removeFromFavoritesInven = (company) => {
+      setFavoritesInven(prevFavorites => prevFavorites.filter(item => item !== company));
+  };
   
+  const toggleFavoriteInven = (company) => {
+
+    console.log(company);
+ 
+    if (favoritesInven.includes(company)) {
+        removeFromFavoritesInven(company);
+    } else {
+        addToFavoritesInven(company);
+    }
+  };
+
 
   return (
-    <div className="App">
-        <header className="App-header">
+          <div className="App">
+               <header className="App-header">
             <h1>OCA Ventures</h1>  
-        </header>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-          accept='.xlsx'
-        /> 
-        <button className="button green-button" onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
-        <p></p>
-        {companies.length > 0 && (
-        <button className='button grey-button' onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
-        )}
-         {companies.length > 0 && (
-        <button className='button grey-button'  onClick={sortCompaniesByNaics}>Sort by NAICS Code</button>
-        )}
-         {companies.length > 0 && (
-        <button className='button grey-button'  onClick={handlSetInvenBack}>Reset Companies</button>
-        )}
-        <div>
-          {companies.length > 0 && (
-            <ResultInven companies={companies}  additionalInfo={additionalInfo}/>
-          )}
-      </div>
-
-
-      <h2>Search For a Business</h2>
-
-      <div className="search-container">
-      <input
-        type="text"
-        placeholder="Enter business name..."
-        value={searchTerm}
-        onChange={handleSearchInputChange}
-      />
-      <StateDropdown state={stateSearch} handler={handleStateChangeSearch} />
-      <button className='button grey-button' onClick={handleSearchSubmit}>Search</button>
-      {messageNamePPP && <p>{messageNamePPP}</p>}
-          {resultsNamePPP.length > 0 && (
-            <div>
-              <h3>{resultsNamePPP.length} Results</h3>
-              <ResultTable results={resultsNamePPP} />
+          </header>
+            <div className="tabs">
+              <div className={`tab ${activeTab === 'upload' ? 'active' : ''}`} onClick={() => setActiveTab('upload')}>Search and Upload</div>
+              <div className={`tab ${activeTab === 'pppDataSearch' ? 'active' : ''}`} onClick={() => setActiveTab('pppDataSearch')}>Browse PPP Data</div>
+              <div className={`tab ${activeTab === 'seeFavs' ? 'active' : ''}`} onClick={() => setActiveTab('seeFavs')}>See Favorites</div>
             </div>
-          )}
-      </div>
-
-
-      <h2>Browse PPP Data</h2>
-      <p>Input Filters Below</p>
-      <form onSubmit={handleCombinedSearchSubmit}>
-        <div className="form-container">
-            <div className="form-row">
-                <input
-                    type="text"
-                    value={zipCodeSearch}
-                    onChange={handleZipCodeChange}
-                    placeholder="Zip Code"
+            {activeTab === 'upload' && (
+                <div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                        accept='.xlsx'
+                      /> 
+                      <button className="button green-button" onClick={() => fileInputRef.current.click()}>Upload Inven.ai Excel File + </button>
+                      <p></p>
+                      {companies.length > 0 && (
+                      <button className='button grey-button' onClick={sortCompaniesByLoanAmount}>Sort by Loan Amount</button>
+                      )}
+                      {companies.length > 0 && (
+                      <button className='button grey-button'  onClick={sortCompaniesByNaics}>Sort by NAICS Code</button>
+                      )}
+                      {companies.length > 0 && (
+                      <button className='button grey-button'  onClick={handlSetInvenBack}>Reset Companies</button>
+                      )}
+                      <div>
+                        {companies.length > 0 && (
+                          <ResultInven companies={companies}  
+                          additionalInfo={additionalInfo} 
+                          addToFavorites={addToFavoritesInven} // Pass addToFavoritesInven function as prop
+                          removeFromFavorites={removeFromFavoritesInven} // Pass removeFromFavoritesInven function as prop
+                          favorites={favoritesInven} // Pass favoritesInven array as prop
+                          toggleFavorite={toggleFavoriteInven}
+                          />
+                        )}
+                    </div>
+              
+              
+                    <h2>Search For a Business</h2>
+              
+                    <div className="search-container">
+                    <input
+                      type="text"
+                      placeholder="Enter business name..."
+                      value={searchTerm}
+                      onChange={handleSearchInputChange}
+                    />
+                    <StateDropdown state={stateSearch} handler={handleStateChangeSearch} />
+                    <button className='button grey-button' onClick={handleSearchSubmit}>Search</button>
+                    {resultsNamePPP.length > 0 && (
+                      <button className='button grey-button'  onClick={handleSetBusinessSearchBack}>Reset Companies</button>
+                      )}
+                    {messageNamePPP && <p>{messageNamePPP}</p>}
+                        {resultsNamePPP.length > 0 && (
+                          <div>
+                            <h3>{resultsNamePPP.length} Results</h3>
+                            <ResultTable results={resultsNamePPP} />
+                          </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'pppDataSearch' && (
+                <div>
+                <h2>Browse PPP Data</h2>
+                <p>Input Filters Below</p>
+                <form onSubmit={handleCombinedSearchSubmit}>
+                  <div className="form-container">
+                      <div className="form-row">
+                          <input
+                              type="text"
+                              value={zipCodeSearch}
+                              onChange={handleZipCodeChange}
+                              placeholder="Zip Code"
+                          />
+                          <input
+                              type="text"
+                              value={naicsStart}
+                              onChange={handleNaicsStartCodeChange}
+                              placeholder="NAICS Code Range Start"
+                          />
+                          <input
+                              type="text"
+                              value={naicsEnd}
+                              onChange={handleNaicsEndCodeChange}
+                              placeholder="NAICS Code Range End"
+                          />
+                          <input
+                            type="text"
+                            value={minLoanAmount}
+                            onChange={handleMinLoanAmountChange}
+                            placeholder="Minimum Loan Amount"
+                          />
+                          <input
+                            type="text"
+                            value={maxLoanAmount}
+                            onChange={handleMaxLoanAmountChange}
+                            placeholder="Maximum Loan Amount"
+                          />
+                           <StateDropdown state={state} handler={handleStateChange} />
+                           <StateToDistrict state={state} selectedDistrict={selectedDistrict} handleDistrictChange={handleDistrictChange} districts={districts}/>
+                           <button className='button grey-button' type="submit">Search</button>
+                      </div>
+                  </div>
+                 
+          
+                </form>
+                {messageSearchPPP && <p>{messageSearchPPP}</p>}
+                {resultsSearchPPP.length > 0 && (
+                      <button className="button red-button" onClick={sortSearchResultsByLoanAmount}>Sort by Loan Amount - Descending</button>
+                )}
+                {resultsSearchPPP.length > 0 && (
+                      <button className="button green-button" onClick={sortSearchResultsByLoanAmountOther}>Sort by Loan Amount - Ascending</button>
+                )}
+                {resultsSearchPPP.length > 0 && (
+                      <button className="button red-button"onClick={sortSearchResultsByNaics}>Sort by Naics Code - Descending</button>
+                )}
+                {resultsSearchPPP.length > 0 && (
+                      <button className="button green-button" onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
+                )}
+                {resultsSearchPPP.length > 0 && (
+                <button className="button grey-button" onClick={handleSetSearchBack}>Reset Search</button>
+                )}
+                <div>
+                  {resultsSearchPPP.length > 0 && (
+                    <h3>{resultsSearchPPP.length} Results</h3>
+                  )}
+                  {resultsSearchPPP.length > 0 && (
+                    <ResultTable results={resultsSearchPPP} />
+                  )}
+                </div>
+                </div>
+            )}
+            {activeTab == 'seeFavs' && (
+                  <div>
+                  <div className="sub-tabs">
+                      <div className={`sub-tab ${activeSubTabFavs === 'seeNew' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeNew')}>See New</div>
+                      <div className={`sub-tab ${activeSubTabFavs === 'seeOld' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeOld')}>See Old</div>
+                  </div>
+                  
+                  {activeSubTabFavs === 'seeNew' && (
+                      <div>
+                          <h3>New Favorites</h3>
+                          {/* Render the component or elements specific to New Favorites */}
+                          <ResultInven 
+                            companies={favoritesInven}  // Assume isNew attribute to filter
+                            additionalInfo={additionalInfo} 
+                            addToFavorites={addToFavoritesInven}
+                            removeFromFavorites={removeFromFavoritesInven}
+                            favorites={favoritesInven}
+                            toggleFavorite={toggleFavoriteInven}
+                          />
+                      </div>
+                  )}
+                  {activeSubTabFavs === 'seeOld' && (
+                  <div>
+                <h3>Old Favorites</h3>
+                {/* Render the component or elements specific to Old Favorites */}
+                <ResultInven 
+                  companies={companies}  // Assume isNew attribute to filter
+                  additionalInfo={additionalInfo} 
+                  addToFavorites={addToFavoritesInven}
+                  removeFromFavorites={removeFromFavoritesInven}
+                  favorites={favoritesInven}
+                  toggleFavorite={toggleFavoriteInven}
                 />
-                <input
-                    type="text"
-                    value={naicsStart}
-                    onChange={handleNaicsStartCodeChange}
-                    placeholder="NAICS Code Range Start"
-                />
-                <input
-                    type="text"
-                    value={naicsEnd}
-                    onChange={handleNaicsEndCodeChange}
-                    placeholder="NAICS Code Range End"
-                />
-                <input
-                  type="text"
-                  value={minLoanAmount}
-                  onChange={handleMinLoanAmountChange}
-                  placeholder="Minimum Loan Amount"
-                />
-                <input
-                  type="text"
-                  value={maxLoanAmount}
-                  onChange={handleMaxLoanAmountChange}
-                  placeholder="Maximum Loan Amount"
-                />
-                 <StateDropdown state={state} handler={handleStateChange} />
-                 <StateToDistrict state={state} selectedDistrict={selectedDistrict} handleDistrictChange={handleDistrictChange} districts={districts}/>
-                 <button className='button grey-button' type="submit">Search</button>
             </div>
-        </div>
-       
-
-      </form>
-      {messageSearchPPP && <p>{messageSearchPPP}</p>}
-      {resultsSearchPPP.length > 0 && (
-            <button className="button red-button" onClick={sortSearchResultsByLoanAmount}>Sort by Loan Amount - Descending</button>
-      )}
-      {resultsSearchPPP.length > 0 && (
-            <button className="button green-button" onClick={sortSearchResultsByLoanAmountOther}>Sort by Loan Amount - Ascending</button>
-      )}
-      {resultsSearchPPP.length > 0 && (
-            <button className="button red-button"onClick={sortSearchResultsByNaics}>Sort by Naics Code - Descending</button>
-      )}
-      {resultsSearchPPP.length > 0 && (
-            <button className="button green-button" onClick={sortSearchResultsByNaicsOther}>Sort by Naics Code - Ascending</button>
-      )}
-      {resultsSearchPPP.length > 0 && (
-      <button className="button grey-button" onClick={handleSetSearchBack}>Reset Search</button>
-      )}
-      <div>
-        {resultsSearchPPP.length > 0 && (
-          <h3>{resultsSearchPPP.length} Results</h3>
         )}
-        {resultsSearchPPP.length > 0 && (
-          <ResultTable results={resultsSearchPPP} />
-        )}
-      </div>
     </div>
+            
+            
+            
+            )}
+    </div> 
+
   );
 }
 
 
 export default App;
+
+
+/*<table className='table'>
+                {/*<thead>
+                    <tr>
+                        <th>Favorite</th>
+                        <th>Company Name</th>
+                        <th>State</th>
+                        <th>Zip Code</th>
+                        <th>NAICS Code</th>
+                        <th>Amount Loaned</th>
+                        <th>Lender</th>
+                        <th>Date Approved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {favoritesInven.map((company, index) => (
+                        <tr key={index}>
+                            
+                          <td>
+                            <FontAwesomeIcon 
+                              icon={favoritesInven.includes(company) ? fasStar : farStar} 
+                              onClick={() => toggleFavoriteInven(company)} 
+                              size='lg'
+                              style={{ color: favoritesInven.includes(company) ? 'green' : 'gray', cursor: 'pointer' }}
+                            />
+                          </td>
+                          <td>{company.Name}</td>
+                        </tr>
+                    ))}
+                  </tbody>
+            </table> */
