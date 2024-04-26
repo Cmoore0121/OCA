@@ -306,6 +306,7 @@ function App() {
       setMessageNamePPP('Please input a business name and the State it is in');
       return;
     }
+    
     const lcSearch = searchTerm.toLowerCase()
     try {
       const documents = await findBusinessByName(lcSearch, stateSearch);
