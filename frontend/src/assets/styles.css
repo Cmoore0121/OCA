@@ -28,12 +28,6 @@
     padding: 8px;
     text-align: center; /* Aligns text to the left; adjust as needed */
 }
-.icon-border {
-    display: inline-block; /* Allows applying padding and border */
-    border: 2px solid black; /* Sets the border color and thickness */
-    border-radius: 50%; /* Optional: makes the border rounded */
-    padding: 5px; /* Adjust based on the size of your icon */
-}
 
 .scrollable-cell {
     max-width: 400px;
@@ -98,6 +92,54 @@
   .grey-button {
     background-color: rgb(219, 217, 217);
   }
+
+  .tabs {
+    display: flex;
+    justify-content: flex-start; /* Adjust as needed */
+    background-color: #f2f2f2;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 0;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.tab:hover {
+    background-color: #ddd;
+}
+
+.tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #007bff; /* Color for the active tab */
+}
+.sub-tabs {
+    display: flex;
+    justify-content: flex-start; /* Adjust as needed */
+    background-color: #f2f2f2;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 0;
+}
+
+.sub-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.sub-tab:hover {
+    background-color: #ddd;
+}
+
+.sub-tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #007bff; /* Color for the active tab */
+}
+
+
+
 
 
   input[type="text"] {

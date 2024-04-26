@@ -159,9 +159,9 @@ async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, 
         }
 
         // Return the last successful results if the final query found no results
-        if (lastSuccessfulDocs.length > 6) {
+        if (lastSuccessfulDocs.length > 10) {
             console.log("Found a lot of matches to one of the key words - not specific enough");
-            return [];
+            return [0];
         } else if (lastSuccessfulDocs.length > 0) {
             console.log("matches foo");
             return lastSuccessfulDocs; // or handle the case as needed
