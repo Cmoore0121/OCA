@@ -74,6 +74,31 @@ async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, 
     }
   }
 
+  function cleanAndSplit(input) {
+    // Convert the string to lowercase
+    const lowerCaseStr = input.toLowerCase();
+  
+    // Split the string into words
+    const words = lowerCaseStr.split(/\s+/); // Split on whitespace
+  
+    // Remove punctuation from each word and replace "&" with an empty string
+    const cleanedWords = words.map((word) => {
+      // Remove punctuation by replacing non-alphanumeric characters with an empty string
+      const cleanedWord = word.replace(/[^\w\s]/g, "");
+      
+      // If the word is "&", set it to an empty string
+      return cleanedWord === "&" ? "" : cleanedWord;
+    });
+  
+    return cleanedWords;
+  }
+  
+  // Example usage
+  const inputString = "Hello, world! This is a test & check if it's working.";
+  const result = cleanAndSplit(inputString);
+  
+  console.log(result); // ["hello", "world", "this", "is", "a", "test", "", "check", "if", "its", "working"]
+
   async function findBusinessByName(businessName, state) {
     const pppCollection = collection(db, 'ppp');
     let initialQuery = query(pppCollection, where('business_name', '==', businessName), where("state", "==", state));
@@ -109,7 +134,7 @@ async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, 
         // "prado" "reenteria" "peis"
 
 
-        const words = businessName.split(' ');
+        const words = cleanAndSplit(businessName);
         console.log(words.length);
         let currentQuery = pppCollection;
         let lastSuccessfulDocs = []; 
@@ -134,11 +159,14 @@ async function queryDocumentsByFlexibleCriteria( zipCode, naicsStart, naicsEnd, 
         }
 
         // Return the last successful results if the final query found no results
-        if (lastSuccessfulDocs.length > 0) {
-            console.log("Returning last successful results");
-            return lastSuccessfulDocs;
+        if (lastSuccessfulDocs.length > 6) {
+            console.log("Found a lot of matches to one of the key words - not specific enough");
+            return [];
+        } else if (lastSuccessfulDocs.length > 0) {
+            console.log("matches foo");
+            return lastSuccessfulDocs; // or handle the case as needed
         } else {
-            console.log("No matches found at any stage");
+          console.log("no matches foo");
             return []; // or handle the case as needed
         }
     } catch (error) {
