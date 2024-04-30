@@ -113,7 +113,7 @@ export const readExcel = (file, onSuccess, onError) => {
 export default readExcel;
 
 
-export const exportToCsv = (data, filename = 'data.csv') => {
+export const exportToCsv = (data, filename) => {
   const csvData = unparse(data);
   const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');

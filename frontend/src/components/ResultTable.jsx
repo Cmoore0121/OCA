@@ -10,9 +10,6 @@ const ResultTable = ({ results }) => {
     // Initialize state to track favorites
     const [favorites, setFavorites] = useState(new Array(results.length).fill(false));
 
-    const handleExport = () => {
-        exportToCsv(results, 'exported-results.csv');
-      };
     
     const toggleFavorite = (index) => {
         const newFavorites = [...favorites];
