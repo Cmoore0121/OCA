@@ -1,4 +1,4 @@
-npm create vite@latest frontend -- --template react
+
 > cd frontend
 > npm install
 > npm run dev
@@ -6,5 +6,10 @@ pip3 install Flask
 pip3 install Flask-SQLAlchemy
 pip3 install flask-cors
 npm install react-modal
+npm install firebase
+npm install --save @fortawesome/fontawesome-svg-core
+npm install --save @fortawesome/free-solid-svg-icons
+npm install --save @fortawesome/free-regular-svg-icons
+npm install --save @fortawesome/react-fontawesome
 
 Notes - Deal with duplicates when uploading entire CSV's of connections

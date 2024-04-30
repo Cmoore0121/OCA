@@ -17,6 +17,7 @@ initializeApp(firebaseConfig);
 const db = getFirestore()
 
 async function findBusiness(businessName, state) {
+    
   const pppCollection = collection(db, 'ppp');
   let initialQuery = query(pppCollection, where('business_name', '==', businessName), where("state", "==", state));
   let results = [];

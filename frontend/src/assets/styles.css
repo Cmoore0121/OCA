@@ -1,0 +1,238 @@
+.table-cell {
+    padding: 8px;
+    text-align: center; /* Centers text in cells */
+}
+
+.table-cell.name {
+    text-align: left; /* Aligns text to the left for the Name column */
+}
+
+.table-row {
+    border-bottom: 4px solid #060c24; /* Adds a line between rows */
+}
+
+.data-item {
+    display: block; /* Ensures each data item is on a new line */
+    padding: 4px 0; /* Adds vertical padding for spacing */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures borders between cells are shared */
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    border: 1px solid #ccc; /* Adds a subtle border to each cell */
+    padding: 8px;
+    text-align: center; /* Aligns text to the left; adjust as needed */
+}
+
+.scrollable-cell {
+    max-width: 400px;
+    max-height: 3em;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: row; /* Ensures content flows vertically */
+    justify-content: center; /* Centers content vertically if less than max-height */
+    line-height: 1.5em;
+    word-wrap: break-word;
+
+}
+
+.table th {
+    background-color: #f4f4f4; /* Light gray background for headers */
+    color: #333; /* Dark text color for contrast */
+}
+
+.table-row {
+    border-bottom: 1px solid #ccc; /* Adds a line between rows */
+}
+
+.App {
+    position: relative;  /* Ensures the child absolute positioning is relative to this container */
+    padding: 10px;       /* Optional: Adds some space inside the container */
+}
+
+.upload-button {
+    position: absolute;
+    top: 140px;          /* Distance from the top of the container */
+    right: 30px;        /* Distance from the right of the container */
+    padding: 20px 30px;  /* Padding for the button, adjust based on your design needs */
+    background-color: rgb(158, 231, 158); /* Green background */
+    color: white;       /* White text */
+    border: none;       /* No border */
+    border-radius: 10px; /* Rounded corners */
+    cursor: pointer; 
+       /* Pointer cursor on hover */
+    font-size: 40px;
+}
+
+.button {
+    padding: 4px 4px;
+    color: black;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 10px; /* This makes the button edges rounded */
+    font-weight: bold; 
+}
+  
+  .blue-button {
+    background-color: rgb(50, 202, 236);
+  }
+  
+  .green-button {
+    background-color: rgb(183, 243, 183);
+  }
+  
+  .red-button {
+    background-color: rgb(240, 165, 165);
+  }
+  .grey-button {
+    background-color: rgb(219, 217, 217);
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: flex-start; /* Adjust as needed */
+    background-color: #f2f2f2;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 0;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.tab:hover {
+    background-color: #ddd;
+}
+
+.tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #007bff; /* Color for the active tab */
+}
+.sub-tabs {
+    display: flex;
+    justify-content: flex-start; /* Adjust as needed */
+    background-color: #f2f2f2;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 0;
+}
+
+.sub-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.sub-tab:hover {
+    background-color: #ddd;
+}
+
+.sub-tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #007bff; /* Color for the active tab */
+}
+
+
+
+
+
+  input[type="text"] {
+    width: auto;
+    padding: 2px 5px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+input[type="text"]:focus {
+    border-color: #6658d3;
+    box-shadow: 0 0 8px rgba(102, 88, 211, 0.5);
+}
+
+input::placeholder {
+    color: #6c6969;
+    font-weight: lighter;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.form-row {
+
+    margin-bottom: 10px;
+}
+
+@media (max-width: 400px) {
+    input[type="text"] {
+        width: 20%;
+    }
+}
+
+input.error {
+    border-color: red;
+}
+
+input.valid {
+    border-color: green;
+}
+
+.select {
+    padding: 15px 20px;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;    /* Adds more padding inside the dropdown for a larger click area */
+    font-size: 12px;       /* Increases the font size for better readability */
+    border: 1px solid #ccc;/* Optionally, customize the border */
+    border-radius: 5px;    /* Adds rounded corners */
+    cursor: pointer;       /* Changes the mouse cursor to a pointer on hover */
+    width: auto;
+}
+.grey-select {
+    background-color: rgb(244, 241, 241);
+}
+
+.App-header {
+    background-color: #282c34; 
+    color: white;              
+    padding: 10px;             
+    text-align: center;     
+}
+
+.center-icon {
+    text-align: center; /* Centers the content horizontally */
+    vertical-align: middle; /* Centers the content vertically */
+    display: table-cell; /* Ensures the cell behaves like a table cell for alignment */
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
