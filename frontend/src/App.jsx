@@ -76,8 +76,12 @@ function App() {
           businessName:  'N/A'  // assuming 'business_name' is the field name
         }];
       }
+      setAdditionalInfo(prevState => ({
+        ...prevState,
+        [company.Name]: info[company.Name]
+      }));
     }
-    setAdditionalInfo(info);
+    
   };
 
 
@@ -340,6 +344,7 @@ function App() {
     }
   };
 
+
   const addToFavoritesInven = (company) => {
     setFavoritesInven(prevFavorites => [...prevFavorites, company]);
   };
@@ -390,6 +395,7 @@ function App() {
                       {companies.length > 0 && (
                       <button className='button grey-button'  onClick={handlSetInvenBack}>Reset Companies</button>
                       )}
+                
                       <div>
                         {companies.length > 0 && (
                           <ResultInven companies={companies}  
@@ -417,6 +423,7 @@ function App() {
                     {resultsNamePPP.length > 0 && (
                       <button className='button grey-button'  onClick={handleSetBusinessSearchBack}>Reset Companies</button>
                       )}
+
                     {messageNamePPP && <p>{messageNamePPP}</p>}
                         {resultsNamePPP.length > 0 && (
                           <div>
@@ -546,34 +553,3 @@ function App() {
 
 export default App;
 
-
-/*<table className='table'>
-                {/*<thead>
-                    <tr>
-                        <th>Favorite</th>
-                        <th>Company Name</th>
-                        <th>State</th>
-                        <th>Zip Code</th>
-                        <th>NAICS Code</th>
-                        <th>Amount Loaned</th>
-                        <th>Lender</th>
-                        <th>Date Approved</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {favoritesInven.map((company, index) => (
-                        <tr key={index}>
-                            
-                          <td>
-                            <FontAwesomeIcon 
-                              icon={favoritesInven.includes(company) ? fasStar : farStar} 
-                              onClick={() => toggleFavoriteInven(company)} 
-                              size='lg'
-                              style={{ color: favoritesInven.includes(company) ? 'green' : 'gray', cursor: 'pointer' }}
-                            />
-                          </td>
-                          <td>{company.Name}</td>
-                        </tr>
-                    ))}
-                  </tbody>
-            </table> */
