@@ -4,18 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import {Modal, LinkedInButton} from './Modal';
-import { exportToCsv } from '../utils/ReadExcel';
 
-const ResultTable = ({ results }) => {
+const ResultTable = ({ results, favorites, toggleFavorite }) => {
     // Initialize state to track favorites
-    const [favorites, setFavorites] = useState(new Array(results.length).fill(false));
-
-    
-    const toggleFavorite = (index) => {
-        const newFavorites = [...favorites];
-        newFavorites[index] = !newFavorites[index];
-        setFavorites(newFavorites);
-    };
 
     return (
         <table className="table">
@@ -36,14 +27,12 @@ const ResultTable = ({ results }) => {
                 {results.map((doc, index) => (
                     <tr key={index}>
                          <td>
-                          <span className='icon-border'>
-                            <FontAwesomeIcon 
-                                icon={favorites[index] ? fasStar : farStar} 
-                                onClick={() => toggleFavorite(index)} 
+                         <FontAwesomeIcon 
+                                icon={favorites.includes(doc) ? fasStar : farStar} 
+                                onClick={() => toggleFavorite(doc)} 
                                 size='lg'
-                                style={{ color: favorites[index] ? 'green' : 'gray', cursor: 'pointer' }}
-                            />
-                            </span>
+                                style={{ color: favorites.includes(doc) ? 'green' : 'gray', cursor: 'pointer' }}
+                        />
                         </td>
                         <td>{doc.business_name ? doc.business_name.toUpperCase() : 'N/A'}</td>
                         <td>{doc.state}</td>
