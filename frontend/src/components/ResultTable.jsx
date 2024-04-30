@@ -45,7 +45,7 @@ const ResultTable = ({ results }) => {
                             />
                             </span>
                         </td>
-                        <td>{doc.business_name.toUpperCase()}</td>
+                        <td>{doc.business_name ? doc.business_name.toUpperCase() : 'N/A'}</td>
                         <td>{doc.state}</td>
                         <td>{doc.zip}</td>
                         <td>{doc.naics_code}</td>
