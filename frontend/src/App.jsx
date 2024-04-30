@@ -29,6 +29,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('upload'); 
   const [activeSubTabFavs, setActiveSubTabFavs] = useState('seeNew'); 
   const [favoritesInven, setFavoritesInven] = useState([]);
+  const [favoritesSearch, setFavoritesSearch] = useState([]);
   const [filename, setFilename] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -413,6 +414,25 @@ function App() {
     }
   };
 
+  const addToFavoritesSearch = (company) => {
+    setFavoritesSearch(prevFavorites => [...prevFavorites, company]);
+  };
+
+  const removeFromFavoritesSearch = (company) => {
+      setFavoritesSearch(prevFavorites => prevFavorites.filter(item => item !== company));
+  };
+  
+  const toggleFavoriteSearch = (company) => {
+
+    console.log(company);
+ 
+    if (favoritesSearch.includes(company)) {
+        removeFromFavoritesSearch(company);
+    } else {
+        addToFavoritesSearch(company);
+    }
+  };
+
 
   return (
           <div className="App">
@@ -448,7 +468,7 @@ function App() {
                             <>
                             {!showInput ? (
                                 <button className='button grey-button' onClick={handleInitialClick}>
-                                    Set Filename & Download CSV
+                                    Download As CSV
                                 </button>
                             ) : (
                                 <>
@@ -497,7 +517,9 @@ function App() {
                         {resultsNamePPP.length > 0 && (
                           <div>
                             <h3>{resultsNamePPP.length} Results</h3>
-                            <ResultTable results={resultsNamePPP} />
+                            <ResultTable results={resultsNamePPP}
+                              favorites={favoritesSearch}
+                              toggleFavorite={toggleFavoriteSearch} />
                           </div>
                         )}
                     </div>
@@ -569,7 +591,10 @@ function App() {
                     <h3>{resultsSearchPPP.length} Results</h3>
                   )}
                   {resultsSearchPPP.length > 0 && (
-                    <ResultTable results={resultsSearchPPP} />
+                    <ResultTable results={resultsSearchPPP}
+                        favorites={favoritesSearch}
+                        toggleFavorite={toggleFavoriteSearch}
+                     />
                   )}
                 </div>
                 </div>
@@ -577,19 +602,17 @@ function App() {
             {activeTab == 'seeFavs' && (
                   <div>
                   <div className="sub-tabs">
-                      <div className={`sub-tab ${activeSubTabFavs === 'seeNew' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeNew')}>See New</div>
-                      <div className={`sub-tab ${activeSubTabFavs === 'seeOld' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeOld')}>See Old</div>
+                      <div className={`sub-tab ${activeSubTabFavs === 'seeNew' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeNew')}>See Inven Favorites</div>
+                      <div className={`sub-tab ${activeSubTabFavs === 'seeOld' ? 'active' : ''}`} onClick={() => setActiveSubTabFavs('seeOld')}>See PPP Search Favorites</div>
                   </div>
                   
                   {activeSubTabFavs === 'seeNew' && (
                       <div>
-                          <h3>New Favorites</h3>
+                          <h3>Inven Favorites</h3>
                           {/* Render the component or elements specific to New Favorites */}
                           <ResultInven 
                             companies={favoritesInven}  // Assume isNew attribute to filter
                             additionalInfo={additionalInfo} 
-                            addToFavorites={addToFavoritesInven}
-                            removeFromFavorites={removeFromFavoritesInven}
                             favorites={favoritesInven}
                             toggleFavorite={toggleFavoriteInven}
                           />
@@ -597,15 +620,12 @@ function App() {
                   )}
                   {activeSubTabFavs === 'seeOld' && (
                   <div>
-                <h3>Old Favorites</h3>
+                <h3>Search Favorites</h3>
                 {/* Render the component or elements specific to Old Favorites */}
-                <ResultInven 
-                  companies={companies}  // Assume isNew attribute to filter
-                  additionalInfo={additionalInfo} 
-                  addToFavorites={addToFavoritesInven}
-                  removeFromFavorites={removeFromFavoritesInven}
-                  favorites={favoritesInven}
-                  toggleFavorite={toggleFavoriteInven}
+                <ResultTable 
+                  results={favoritesSearch}  // Assume isNew attribute to filter
+                  favorites={favoritesSearch}
+                  toggleFavorite={toggleFavoriteSearch}
                 />
             </div>
         )}
