@@ -27,6 +27,7 @@ export const readExcel = (file, onSuccess, onError) => {
 }; */
 
 import * as XLSX from 'xlsx';
+import { unparse } from 'papaparse';
 
 export const readExcel = (file, onSuccess, onError) => {
   const stateAbbreviations = {
@@ -110,4 +111,16 @@ export const readExcel = (file, onSuccess, onError) => {
 };
 
 export default readExcel;
+
+
+export const exportToCsv = (data, filename = 'data.csv') => {
+  const csvData = unparse(data);
+  const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
