@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { readExcel } from './utils/ReadExcel';
+import { readExcel, exportToCsv } from './utils/ReadExcel';
 //import openConnectionWindow from './utils/OpenConnectWindow';
 //import parseConnectionsCSV from './utils/ParseConnections';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
@@ -7,9 +7,6 @@ import { readExcel } from './utils/ReadExcel';
 import {findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
 import './assets/styles.css'
 import {ResultTable, StateDropdown, StateToDistrict, ResultInven} from './components/ResultTable';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
-import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   const [companies, setCompanies] = useState([]);
@@ -32,6 +29,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('upload'); 
   const [activeSubTabFavs, setActiveSubTabFavs] = useState('seeNew'); 
   const [favoritesInven, setFavoritesInven] = useState([]);
+  const [filename, setFilename] = useState('');
+  const [showInput, setShowInput] = useState(false);
 
 
   const handleSearchInputChange = (event) => {
@@ -315,6 +314,56 @@ function App() {
     }
   };
 
+  const handleCSVDownload = (event) => {
+    if (!filename.trim()) { // Check if the filename is not just empty spaces
+      alert('Please enter a valid filename.');
+      return;
+  }
+    const mergedData = companies.map(company => {
+      const additional = additionalInfo[company.Name] || [];
+      // Create a merged object with the desired order of fields
+      const baseFields = {
+          Website: company.Website,
+          Name: company.Name,
+          Country: company.Country,
+          Region: company.Region,
+          City: company.City,
+      };
+
+      const additionalFields = additional.length > 0 ? {
+          LoanAmount: additional[0].loanAmount || 'N/A',
+          NaicsCode: additional[0].naicsCode || 'N/A',
+          Lender: additional[0].lender || 'N/A',
+          DateApproved: additional[0].dateApproved || 'N/A',
+      
+      } : {
+          LoanAmount: 'N/A',
+          NaicsCode: 'N/A',
+          Lender: 'N/A',
+          DateApproved: 'N/A',
+      };
+
+      // Append remaining company data if there are more columns after the first 5
+      const remainingFields = Object.keys(company).reduce((acc, key) => {
+          // Exclude keys that are already included in the base or additional fields
+          if (!['Website', 'Name', 'Country', 'Region', 'City'].includes(key)) {
+              acc[key] = company[key];
+          }
+          return acc;
+      }, {});
+      const mergedObject = {...baseFields, ...additionalFields, ...remainingFields};
+
+      return mergedObject;
+  });
+
+  // Export the merged data to CSV
+  exportToCsv(mergedData, filename + ".csv");
+  };
+
+  const handleInitialClick = () => {
+    setShowInput(true); // Show the input field when the button is clicked
+};
+
   const handleSearchSubmit = async () => {
     if (searchTerm.trim() === '' || stateSearch == "") {
       setResultsNamePPP([]);
@@ -395,7 +444,27 @@ function App() {
                       {companies.length > 0 && (
                       <button className='button grey-button'  onClick={handlSetInvenBack}>Reset Companies</button>
                       )}
-                
+                      {companies.length > 0 && (
+                            <>
+                            {!showInput ? (
+                                <button className='button grey-button' onClick={handleInitialClick}>
+                                    Set Filename & Download CSV
+                                </button>
+                            ) : (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={filename}
+                                        onChange={(e) => setFilename(e.target.value)}
+                                        placeholder="Enter file name"
+                                    />
+                                    <button className='button grey-button' onClick={handleCSVDownload}>
+                                        Download Results as CSV
+                                    </button>
+                                </>
+                            )}
+                        </>
+                      )}
                       <div>
                         {companies.length > 0 && (
                           <ResultInven companies={companies}  
