@@ -4,13 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import {Modal, LinkedInButton} from './Modal';
+import { exportToCsv } from '../utils/ReadExcel';
 
 const ResultTable = ({ results }) => {
     // Initialize state to track favorites
     const [favorites, setFavorites] = useState(new Array(results.length).fill(false));
+
+    const handleExport = () => {
+        exportToCsv(results, 'exported-results.csv');
+      };
     
-
-
     const toggleFavorite = (index) => {
         const newFavorites = [...favorites];
         newFavorites[index] = !newFavorites[index];
