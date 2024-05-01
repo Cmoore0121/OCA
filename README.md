@@ -10,7 +10,7 @@ node -v
 
 If Node.js is not installed or you need to install it, please follow the installation instructions available at [Node.js Official Downloads](https://nodejs.org/en/download/).
 
-Once Node.js is installed, you can proceed with setting up the Query PPP project. First, clone the repository:
+Once Node.js is installed, you can proceed with setting up the Query PPP project in the Terminal. First, clone the repository:
 
 ```bash
 git clone https://github.com/Cmoore0121/OCA.git
