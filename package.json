@@ -1,6 +1,19 @@
 {
+  "name": "OCA Ventures PPP",
+  "version": "1.0.0",
+  "description": "Gather + Sort PPP Data",
   "dependencies": {
-    "firebase": "^10.11.0",
-    "papaparse": "^5.4.1"
-  }
+    "react-modal": "latest",
+    "firebase": "latest",
+    "@fortawesome/fontawesome-svg-core": "latest",
+    "@fortawesome/free-solid-svg-icons": "latest",
+    "@fortawesome/free-regular-svg-icons": "latest",
+    "@fortawesome/react-fontawesome": "latest",
+    "papaparse": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cmoore0121/OCA"
+  },
+  "author": "Clayton Moore, Berk Yalcinkaya"
 }
