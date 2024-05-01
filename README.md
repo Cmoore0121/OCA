@@ -60,5 +60,10 @@ Once the permissions are set, you can run this script from anywhere on your syst
 ```bash
 /path/to/OCA/run_app.sh
 ```
-
 This command will start the application server and display the URL in your terminal.
+
+Further, You once the run_app.sh file is enabled you can right click on the file run_app.sh and go to "Open With" 
+Select Terminal. You will likely have to go to 'Other' then to 'Utilities' and then to 'Terminal'
+Select Always Open with and save. 
+Now any time you double click the file run_app.sh, the URL for the dashboard will appear.
+
