@@ -162,11 +162,12 @@ function App() {
   };
     
   const handlSetInvenBack = (event) => {
-    setAdditionalInfo([]);
     setCompanies([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    console.log(additionalInfo);
+    
   };
   const handleSetBusinessSearchBack = (event) => {
     setResultsNamePPP([]);
