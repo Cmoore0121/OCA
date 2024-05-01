@@ -47,4 +47,18 @@ npm run dev
 
 This will start the server and usually open a browser window with the application running, or you can manually visit the provided local URL in your browser.
 
+## Enabling App Usage Anywhere
 
+In the OCA folder, there is an executable file named `run_app.sh`. This script can be used to launch the application from anywhere on your system and will print the URL where the app can be accessed. To enable this functionality, you first need to grant execution permissions to the script. Open a terminal or command prompt and run the following command:
+
+```bash
+chmod +x /path/to/OCA/run_app.sh
+```
+
+Once the permissions are set, you can run this script from anywhere on your system to start the application and print the URL. Simply navigate to any directory where you want to run the script from and execute:
+
+```bash
+/path/to/OCA/run_app.sh
+```
+
+This command will start the application server and display the URL in your terminal.
