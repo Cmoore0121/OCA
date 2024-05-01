@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { readExcel, exportToCsv } from './utils/ReadExcel';
 //import openConnectionWindow from './utils/OpenConnectWindow';
-//import parseConnectionsCSV from './utils/ParseConnections';
 //import { addConnectionToDatabase } from './utils/addConnectionDatabase';
 //import openAllConnectionWindow from './utils/ManageConnectionsWindow';
 import {findBusinessByName, queryDocumentsByFlexibleCriteria} from './utils/firebaseSet';
